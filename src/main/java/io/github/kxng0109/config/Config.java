@@ -1,10 +1,10 @@
-package config;
+package io.github.kxng0109.config;
 
 /**
  * Encapsulates configuration details for integrating with OpenAI, Google, and Ollama services,
  * as well as AI-specific parameters such as temperature and command timeout duration.
  * Uses nested record types {@code OpenAiConfig}, {@code GoogleConfig}, and {@code OllamaConfig}
- * for modular representation of service-specific settings.
+ * for modular representation of io.github.kxng0109.config.service-specific settings.
  * Provides functionality to load configurations from environment variables while supporting
  * default values when variables are not explicitly set.
  */
@@ -20,7 +20,7 @@ public record Config(
      * and Ollama services, along with AI parameters such as temperature and timeout duration.
      * If any required environment variables are not set, default values are used.
      *
-     * @return a {@code Config} object initialized with the necessary service configurations
+     * @return a {@code Config} object initialized with the necessary io.github.kxng0109.config.service configurations
      * and parameters.
      */
     public static Config loadFromEnv() {
@@ -92,7 +92,7 @@ public record Config(
      * to interact with Ollama's AI functionalities.
      *
      * @param model   the default model to use for Ollama requests
-     * @param baseUrl the base URL of the Ollama service
+     * @param baseUrl the base URL of the Ollama io.github.kxng0109.config.service
      */
     public record OllamaConfig(String model, String baseUrl) {
         public boolean isConfigured() {

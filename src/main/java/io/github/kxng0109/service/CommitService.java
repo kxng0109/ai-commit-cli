@@ -1,4 +1,4 @@
-package service;
+package io.github.kxng0109.service;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -9,7 +9,7 @@ import java.net.ConnectException;
 /**
  * The CommitService class facilitates the generation and execution of commit
  * messages for staged changes in a Git repository. It leverages an AI-based
- * service to create commit messages that adhere to standards, providing a
+ * io.github.kxng0109.config.service to create commit messages that adhere to standards, providing a
  * streamlined approach for developers to commit changes efficiently.
  */
 public class CommitService {
@@ -75,18 +75,18 @@ public class CommitService {
     }
 
     /**
-     * Automatically generates a commit message for the staged changes using an AI-backed service
+     * Automatically generates a commit message for the staged changes using an AI-backed io.github.kxng0109.config.service
      * and commits the changes to the Git repository.
      *
      * This method checks if there are any staged changes. If no staged changes are found,
      * it throws an exception prompting the user to stage changes first. When staged changes are found,
-     * it retrieves the diff of those changes, generates a commit message using an AI service, displays
+     * it retrieves the diff of those changes, generates a commit message using an AI io.github.kxng0109.config.service, displays
      * the generated message, and performs the commit operation with the generated message.
      * If the commit is successful, the Git's command output is displayed.
      *
-     * @throws IllegalStateException if there are no staged changes in the repository or if the AI service
+     * @throws IllegalStateException if there are no staged changes in the repository or if the AI io.github.kxng0109.config.service
      *                               fails to generate a valid commit message.
-     * @throws RuntimeException if connectivity issues or errors occur during the interaction with the AI service.
+     * @throws RuntimeException if connectivity issues or errors occur during the interaction with the AI io.github.kxng0109.config.service.
      */
     public void generateAndCommit() {
         log.info("Checking for staged changes...");
@@ -110,8 +110,8 @@ public class CommitService {
 
 
     /**
-     * Generates a commit message based on the provided diff by communicating with the AI service.
-     * If the AI service fails to provide a valid commit message or encounters connectivity issues,
+     * Generates a commit message based on the provided diff by communicating with the AI io.github.kxng0109.config.service.
+     * If the AI io.github.kxng0109.config.service fails to provide a valid commit message or encounters connectivity issues,
      * appropriate exceptions are thrown.
      *
      * @param diff the staged changes or differences as a string input for the AI to analyze

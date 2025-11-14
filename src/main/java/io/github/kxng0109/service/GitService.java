@@ -1,4 +1,4 @@
-package service;
+package io.github.kxng0109.service;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

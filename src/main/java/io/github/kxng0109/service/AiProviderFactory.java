@@ -1,7 +1,7 @@
-package service;
+package io.github.kxng0109.service;
 
 import com.google.genai.Client;
-import config.Config;
+import io.github.kxng0109.config.Config;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ai.chat.client.ChatClient;

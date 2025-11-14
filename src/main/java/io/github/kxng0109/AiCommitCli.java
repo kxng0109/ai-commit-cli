@@ -1,13 +1,15 @@
-import config.Config;
+package io.github.kxng0109;
+
+import io.github.kxng0109.service.AiProviderFactory;
+import io.github.kxng0109.service.CommitService;
+import io.github.kxng0109.config.Config;
+import io.github.kxng0109.service.GitService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ai.chat.client.ChatClient;
-import service.AiProviderFactory;
-import service.CommitService;
-import service.GitService;
 
 /**
- * The AiCommitCli class serves as the main entry point for the AI Commit CLI tool,
+ * The io.github.kxng0109.AiCommitCli class serves as the main entry point for the AI Commit CLI tool,
  * which generates conventional commit messages using AI implementations from
  * various providers such as OpenAI, Google Gemini, Ollama and more to come.
  *
