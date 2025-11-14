@@ -3,7 +3,7 @@ package config;
 /**
  * Encapsulates configuration details for integrating with OpenAI, Google, and Ollama services,
  * as well as AI-specific parameters such as temperature and command timeout duration.
- * Utilizes nested record types {@code OpenAiConfig}, {@code GoogleConfig}, and {@code OllamaConfig}
+ * Uses nested record types {@code OpenAiConfig}, {@code GoogleConfig}, and {@code OllamaConfig}
  * for modular representation of service-specific settings.
  * Provides functionality to load configurations from environment variables while supporting
  * default values when variables are not explicitly set.
