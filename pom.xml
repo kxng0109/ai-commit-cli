@@ -12,9 +12,11 @@
         <java.version>25</java.version>
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>
+        <maven.compiler.release>${java.version}</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
         <main.class>io.github.kxng0109.App</main.class>
+        <spring.ai.version>1.1.0</spring.ai.version>
     </properties>
 
     <dependencyManagement>
@@ -22,7 +24,7 @@
             <dependency>
                 <groupId>org.springframework.ai</groupId>
                 <artifactId>spring-ai-bom</artifactId>
-                <version>1.0.3</version>
+                <version>${spring.ai.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -32,12 +34,17 @@
     <dependencies>
         <dependency>
             <groupId>org.springframework.ai</groupId>
-            <artifactId>spring-ai-starter-model-openai</artifactId>
+            <artifactId>spring-ai-openai</artifactId>
         </dependency>
 
         <dependency>
             <groupId>org.springframework.ai</groupId>
-            <artifactId>spring-ai-starter-model-ollama</artifactId>
+            <artifactId>spring-ai-ollama</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.ai</groupId>
+            <artifactId>spring-ai-google-genai</artifactId>
         </dependency>
 
         <dependency>
@@ -56,7 +63,43 @@
                 <configuration>
                     <source>${java.version}</source>
                     <target>${java.version}</target>
+                    <release>${java.version}</release>
+                    <parameters>true</parameters>
                 </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>3.6.0</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <transformers>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                    <mainClass>${main.class}</mainClass>
+                                </transformer>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
+                            </transformers>
+                            <filters>
+                                <filter>
+                                    <artifact>*:*</artifact>
+                                    <excludes>
+                                        <exclude>META-INF/*.SF</exclude>
+                                        <exclude>META-INF/*.DSA</exclude>
+                                        <exclude>META-INF/*.RSA</exclude>
+                                        <exclude>META-INF/MANIFEST.MF</exclude>
+                                    </excludes>
+                                </filter>
+                            </filters>
+                            <createDependencyReducedPom>false</createDependencyReducedPom>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
 
             <plugin>
@@ -76,6 +119,18 @@
                 <configuration>
                     <mainClass>${main.class}</mainClass>
                     <imageName>git-commit-ai</imageName>
+                    <buildArgs>
+                        <buildArg>--no-fallback</buildArg>
+                        <buildArg>-march=compatibility</buildArg>
+                        <buildArg>--enable-url-protocols=https,http</buildArg>
+                        <buildArg>--enable-all-security-services</buildArg>
+                        <buildArg>-H:+RemoveUnusedSymbols</buildArg>
+                        <buildArg>-H:+ReportExceptionStackTraces</buildArg>
+                        <buildArg>--gc=G1</buildArg>
+                        <buildArg>-O3</buildArg>
+                        <buildArg>--initialize-at-build-time=org.slf4j</buildArg>
+                        <buildArg>-H:-UseServiceLoaderFeature</buildArg>
+                    </buildArgs>
                 </configuration>
             </plugin>
         </plugins>
