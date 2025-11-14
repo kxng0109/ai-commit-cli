@@ -42,7 +42,7 @@ public class AiCommitCli {
             }
         }
 
-        String logLevel = System.getenv().getOrDefault("LOG_LEVEL", "WARN");
+        String logLevel = System.getenv().getOrDefault("AI_LOG_LEVEL", "WARN");
         System.setProperty("org.slf4j.simple.defaultLogLevel", logLevel);
         System.setProperty("org.slf4j.simple.showDateTime", "false");
         System.setProperty("org.slf4j.simple.showThreadName", "false");

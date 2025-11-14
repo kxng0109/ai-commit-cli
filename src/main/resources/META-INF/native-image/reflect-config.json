@@ -1,0 +1,17 @@
+[
+	{
+		"name": "org.springframework.ai.openai.api.OpenAiApi",
+		"allDeclaredConstructors": true,
+		"allPublicMethods": true
+	},
+	{
+		"name": "org.springframework.ai.ollama.api.OllamaApi",
+		"allDeclaredConstructors": true,
+		"allPublicMethods": true
+	},
+	{
+		"name": "com.google.genai.Client",
+		"allDeclaredConstructors": true,
+		"allPublicMethods": true
+	}
+]
