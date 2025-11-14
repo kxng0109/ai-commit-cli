@@ -15,7 +15,7 @@
         <maven.compiler.release>${java.version}</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-        <main.class>io.github.kxng0109.App</main.class>
+        <main.class>io.github.kxng0109.AiCommitCli</main.class>
         <spring.ai.version>1.1.0</spring.ai.version>
     </properties>
 
