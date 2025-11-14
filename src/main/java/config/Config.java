@@ -9,9 +9,9 @@ package config;
  * default values when variables are not explicitly set.
  */
 public record Config(
-        OpenAiConfig openAiConfig,
-        GoogleConfig googleConfig,
-        OllamaConfig ollamaConfig,
+        OpenAiConfig openai,
+        GoogleConfig google,
+        OllamaConfig ollama,
         double temperature,
         int commandTimeoutSeconds
 ) {
@@ -24,18 +24,18 @@ public record Config(
      * and parameters.
      */
     public static Config loadFromEnv() {
-        OpenAiConfig openAiConfig = new OpenAiConfig(
+        OpenAiConfig openai = new OpenAiConfig(
                 System.getenv("OPENAPI_API_KEY"),
                 getEnvOrDefault("OPENAI_BASE_URL", "https://api.openai.com"),
                 getEnvOrDefault("OPENAI_MODEL", "gpt-4o")
         );
 
-        GoogleConfig googleConfig = new GoogleConfig(
+        GoogleConfig google = new GoogleConfig(
                 System.getenv("GOOGLE_API_KEY"),
                 getEnvOrDefault("GOOGLE_MODEL", "gemini-pro")
         );
 
-        OllamaConfig ollamaConfig = new OllamaConfig(
+        OllamaConfig ollama = new OllamaConfig(
                 System.getenv("OLLAMA_MODEL"),
                 getEnvOrDefault("OLLAMA_BASE_URL", "http://localhost:11434")
         );
@@ -49,9 +49,9 @@ public record Config(
         );
 
         return new Config(
-                openAiConfig,
-                googleConfig,
-                ollamaConfig,
+                openai,
+                google,
+                ollama,
                 temperature,
                 timeout
         );
