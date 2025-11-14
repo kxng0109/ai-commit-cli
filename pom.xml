@@ -12,7 +12,6 @@
         <java.version>25</java.version>
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>
-        <maven.compiler.release>${java.version}</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
         <main.class>io.github.kxng0109.AiCommitCli</main.class>
@@ -69,7 +68,6 @@
                 <configuration>
                     <source>${java.version}</source>
                     <target>${java.version}</target>
-                    <release>${java.version}</release>
                     <parameters>true</parameters>
                 </configuration>
             </plugin>
@@ -98,7 +96,6 @@
                                         <exclude>META-INF/*.SF</exclude>
                                         <exclude>META-INF/*.DSA</exclude>
                                         <exclude>META-INF/*.RSA</exclude>
-                                        <exclude>META-INF/MANIFEST.MF</exclude>
                                     </excludes>
                                 </filter>
                             </filters>
@@ -123,23 +120,24 @@
                     </execution>
                 </executions>
                 <configuration>
+                    <imageName>ai-commit-cli</imageName>
                     <mainClass>${main.class}</mainClass>
-                    <imageName>git-commit-ai</imageName>
                     <buildArgs>
+                        <buildArg>-jar</buildArg>
+                        <buildArg>${project.build.directory}/${project.build.finalName}.jar</buildArg>
                         <buildArg>--no-fallback</buildArg>
                         <buildArg>-march=compatibility</buildArg>
                         <buildArg>--enable-url-protocols=https,http</buildArg>
                         <buildArg>--enable-all-security-services</buildArg>
+                        <buildArg>-H:+UnlockExperimentalVMOptions</buildArg>
                         <buildArg>-H:+RemoveUnusedSymbols</buildArg>
                         <buildArg>-H:+ReportExceptionStackTraces</buildArg>
                         <buildArg>--gc=G1</buildArg>
                         <buildArg>-O3</buildArg>
                         <buildArg>--initialize-at-build-time=org.slf4j</buildArg>
-                        <buildArg>-H:-UseServiceLoaderFeature</buildArg>
                     </buildArgs>
                 </configuration>
             </plugin>
         </plugins>
     </build>
-
 </project>

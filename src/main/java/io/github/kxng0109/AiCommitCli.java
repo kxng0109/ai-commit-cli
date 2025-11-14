@@ -131,8 +131,8 @@ public class AiCommitCli {
                 
                 # Using OpenRouter with Claude
                 export OPENAI_API_KEY="sk-or-..."
-                export OPENAI_BASE_URL="https://openrouter.ai/api/v1"
-                export OPENAI_MODEL="anthropic/claude-3.5-sonnet"
+                export OPENAI_BASE_URL="https://openrouter.ai/api/"
+                export OPENAI_MODEL="anthropic/claude-sonnet-4.5
                 git add .
                 ai-commit
                 
@@ -140,7 +140,9 @@ public class AiCommitCli {
                 export GOOGLE_API_KEY="AIza..."
                 git add .
                 ai-commit
-            
+                
+                Note: Use "set" for command prompt and "$env:" for PowerShell instead of "export" if you are using windows
+
             PRIORITY ORDER:
                 If multiple providers are configured, priority is: OpenAI > Google > Ollama
             

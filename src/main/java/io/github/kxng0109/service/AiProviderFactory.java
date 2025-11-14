@@ -75,6 +75,7 @@ public class AiProviderFactory {
                                        export OLLAMA_MODEL="llama3"
                                        export OLLAMA_BASE_URL="http://localhost:11434"  # optional
                         
+                                    Note: Use "set" for command prompt and "$env:" for PowerShell instead of "export" if you are using windows
                                     Run 'ai-commit --help' for more information.
                         """
         );
