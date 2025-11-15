@@ -3,14 +3,15 @@ package io.github.kxng0109.service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Provides Git-related operations such as retrieving staged changes, committing them,
- * and checking for their presence. This class interacts with the Git command-line tool
- * to execute and manage these operations programmatically.
+ * A service class that provides utility methods for interacting with a Git repository.
+ * This class supports operations such as retrieving staged changes, committing them,
+ * and checking for staged changes. It utilizes underlying Git commands for execution.
  */
 public class GitService {
 
@@ -23,11 +24,11 @@ public class GitService {
     }
 
     /**
-     * Retrieves the differences of the currently staged changes in the Git repository.
-     * This method executes the Git command to fetch the staged diff.
+     * Retrieves the differences between the currently staged changes and the repository's HEAD.
+     * This method uses the Git command `git diff --staged` to fetch the diff of files
+     * that have been staged for commit.
      *
-     * @return a string containing the output of the Git diff command for the staged changes,
-     *         which represents the differences of the files that are staged for commit.
+     * @return a string representing the staged differences in unified diff format.
      */
     public String getStagedDiff() {
         log.debug("Retrieving staged changes...");
@@ -36,46 +37,51 @@ public class GitService {
 
     /**
      * Commits the currently staged changes in the Git repository with the provided commit message.
-     * This method executes a Git commit command and logs the operation.
+     * This method invokes the Git command to commit changes and adds the specified message.
      *
-     * @param message the commit message to associate with the staged changes
-     * @return the output of the Git commit command as a trimmed string
+     * @param message the commit message describing the changes being committed
+     * @return the output of the Git commit command as a string, typically containing
+     * information about the success of the commit operation
      */
-    public String commit(String message){
+    public String commit(String message) {
         log.debug("Committing changes...");
         return runCommand("git", "commit", "--message", message);
     }
 
     /**
-     * Checks if there are staged changes in the Git repository.
-     * This method determines the presence of changes that are staged
-     * for commit by examining the output of the Git diff command.
+     * Checks whether there are staged changes in the Git repository.
+     * This method determines if any files have been staged for commit by analyzing
+     * the output of a Git command retrieving staged differences.
      *
-     * @return true if there are staged changes present, false otherwise
+     * @return {@code true} if there are staged changes in the repository, {@code false} otherwise.
      */
-    public boolean hasStagedChanges(){
+    public boolean hasStagedChanges() {
         log.debug("Checking if staged changes...");
-        try{
+        try {
             String diff = getStagedDiff();
             return diff != null && !diff.isEmpty();
-        }catch (RuntimeException e){
+        } catch (RuntimeException e) {
             log.debug("Failed to check for staged changes", e);
             return false;
         }
     }
 
     /**
-     * Executes the given command as a system process.
-     * The method will wait for the process to complete within the specified timeout duration.
-     * If the process takes longer than the timeout or exits unsuccessfully, it will throw an exception.
+     * Executes a shell command represented as a sequence of strings and retrieves its output.
+     * This method utilizes {@link ProcessBuilder} to run the command, sets the current working
+     * directory to the user's directory, and enforces a timeout to avoid indefinite hangs.
+     * Errors and non-zero exit codes are handled by throwing runtime exceptions.
      *
-     * @param command the command to execute, where each part of the command is passed as a separate argument
-     *                (e.g., "git", "diff", "--staged").
-     * @return the standard output of the command as a trimmed string.
-     * @throws RuntimeException if the process fails, times out, or is interrupted.
+     * @param command the command to execute, provided as an array of strings where the first string represents
+     *                the command name and subsequent strings represent the arguments
+     * @return the standard output of the executed command as a trimmed string
+     * @throws RuntimeException if the command fails, times out, or is interrupted
      */
     private String runCommand(String... command) {
         ProcessBuilder processBuilder = new ProcessBuilder(command);
+
+        File workingDir = new File(System.getProperty("user.dir"));
+        processBuilder.directory(workingDir);
         processBuilder.redirectErrorStream(true);
 
         Process process = null;

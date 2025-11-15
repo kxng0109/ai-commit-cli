@@ -1,65 +1,75 @@
 package io.github.kxng0109;
 
+import io.github.kxng0109.config.Config;
 import io.github.kxng0109.service.AiProviderFactory;
 import io.github.kxng0109.service.CommitService;
-import io.github.kxng0109.config.Config;
 import io.github.kxng0109.service.GitService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.chat.model.ChatModel;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Properties;
 
 /**
- * The io.github.kxng0109.AiCommitCli class serves as the main entry point for the AI Commit CLI tool,
- * which generates conventional commit messages using AI implementations from
- * various providers such as OpenAI, Google Gemini, Ollama and more to come.
+ * The {@code AiCommitCli} class serves as the entry point for the AI Commit command-line interface.
+ * This utility automates the generation of conventional commit messages using AI-based providers
+ * such as OpenAI, Google Gemini, or Ollama. It provides configurable options for customization,
+ * help instructions, logging, and version information.
  *
- * This class facilitates interaction with the command-line interface, allowing
- * users to configure, execute, and manage AI-driven commit message generation
- * within a Git-compatible environment.
+ * <p>Main functionality includes:</p>
+ * <ul>
+ *   <li>Displaying version information using the {@code --version} or {@code -v} argument.</li>
+ *   <li>Providing usage instructions and detailed help using the {@code --help} or {@code -h} argument.</li>
+ *   <li>Configuring logging behavior through environment variables.</li>
+ *   <li>Loading configurations, integrating with AI providers, and enabling users to auto-generate
+ *       and commit messages using AI.</li>
+ *   <li>Handling potential errors during execution and logging for enhanced traceability.</li>
+ * </ul>
  *
- * Features:
- * - Supports multiple AI providers, configurable via environment variables.
- * - Generates meaningful commit messages from Git changes using AI.
- * - Configures logging levels dynamically through environment variables.
- * - Offers a help menu and version details for user guidance.
+ * <p>This tool simplifies the commit message creation workflow for developers by automating the
+ * process via AI-backed recommendations while allowing complete flexibility with various AI providers.</p>
  *
- * The main method processes arguments, sets up configurations, initializes
- * services, and handles any operational exceptions encountered during execution.
+ * <p>For more help or usage instructions, invoke the tool with the {@code -h} or {@code --help} flag.</p>
+ *
+ * @version The CLI version is dynamically loaded at runtime from a {@code version.properties} file,
+ * defaulting to {@code "unknown"} if the file is unavailable.
+ * @see #main(String[])
+ * @see #loadVersion()
+ * @see #configureLogging()
+ * @see #printHelp()
  */
 public class AiCommitCli {
     private static final Logger log = LoggerFactory.getLogger(AiCommitCli.class);
-    private static final String VERSION = "1.0.0"; //Search for if there's a way to get this from the pom.xml instead of hardcoding it
+    private static final String VERSION = loadVersion();
 
     public static void main(String[] args) {
-        if(args.length > 0){
+        if (args.length > 0) {
             String arg = args[0];
-            if(arg.equals("--version") || arg.equals("-v")){
+            if (arg.equals("--version") || arg.equals("-v")) {
                 System.out.println("ai-commit version " + VERSION);
                 System.exit(0);
             }
 
-            if(arg.equals("--help") || arg.equals("-h")){
+            if (arg.equals("--help") || arg.equals("-h")) {
                 printHelp();
                 System.exit(0);
             }
         }
 
-        String logLevel = System.getenv().getOrDefault("AI_LOG_LEVEL", "WARN");
-        System.setProperty("org.slf4j.simple.defaultLogLevel", logLevel);
-        System.setProperty("org.slf4j.simple.showDateTime", "false");
-        System.setProperty("org.slf4j.simple.showThreadName", "false");
-        System.setProperty("org.slf4j.simple.showLogName", "false");
+        configureLogging();
 
         try {
             Config config = Config.loadFromEnv();
 
             GitService gitService = new GitService(config.commandTimeoutSeconds());
-            ChatClient chatClient = AiProviderFactory.createChatClient(config);
-            CommitService commitService = new CommitService(gitService, chatClient);
+            ChatModel chatModel = AiProviderFactory.createChatModel(config);
+            CommitService commitService = new CommitService(gitService, chatModel);
 
             commitService.generateAndCommit();
             System.exit(0);
-        }catch (IllegalStateException e){
+        } catch (IllegalStateException e) {
             System.err.println("\nAn error occurred: " + e.getMessage());
             System.exit(1);
         } catch (Exception e) {
@@ -70,83 +80,131 @@ public class AiCommitCli {
     }
 
     /**
-     * Prints the help message for the AI Commit CLI tool, providing information
-     * about usage, available options, environment variables, examples, and
-     * priority order for multiple AI providers. This method displays detailed
-     * guidance on configuring and using different AI backends supported by the
-     * tool, as well as instructions for setting optional parameters.
+     * Loads the version information of the application from the {@code version.properties} file.
+     * <p>
+     * This method attempts to read the {@code version} property from a {@code version.properties}
+     * file located in the classpath. If the file is unavailable or an error occurs during
+     * reading, it will return a default value of {@code "unknown"}.
+     * </p>
      *
-     * The help message includes the following sections:
-     * - General tool description
-     * - Usage syntax and available options
-     * - Required and optional environment variables for AI provider configuration
-     * - Examples for configuring and invoking the tool with specific providers
-     * - Priority rules when multiple providers are configured
-     * - Link for further documentation
+     * @return the application version as a {@link String}, or {@code "unknown"} if the version
+     * cannot be determined.
      */
-    private static void printHelp(){
-        System.out.println("""
-            AI Commit - Generate conventional commit messages using AI
-            
-            USAGE:
-                ai-commit [OPTIONS]
-            
-            OPTIONS:
-                -h, --help       Show this help message
-                -v, --version    Show version information
-            
-            ENVIRONMENT VARIABLES:
-            
-                AI Provider (choose ONE):
-                
-                1. OpenAI / OpenAI-compatible APIs (OpenRouter, Together, etc.):
-                   OPENAI_API_KEY           Your API key (required)
-                   OPENAI_MODEL             Model name (default: gpt-4o)
-                   OPENAI_BASE_URL          API endpoint (default: https://api.openai.com)
-                
-                2. Google Gemini:
-                   GOOGLE_API_KEY           Your API key (required)
-                   GOOGLE_MODEL             Model name (default: gemini-2.0-flash-exp)
-                
-                3. Ollama (local models):
-                   OLLAMA_MODEL             Model name (required, e.g., llama3, qwen2.5)
-                   OLLAMA_BASE_URL          Server URL (default: http://localhost:11434)
-                
-                Optional Settings:
-                   AI_LOG_LEVEL             Log level: ERROR, WARN, INFO, DEBUG (default: WARN)
-                   AI_TEMPERATURE           Model temperature 0.0-1.0 (default: 0.1)
-                   AI_COMMAND_TIMEOUT       Git command timeout seconds (default: 30)
-            
-            EXAMPLES:
-            
-                # Using OpenAI
-                export OPENAI_API_KEY="sk-..."
-                git add .
-                ai-commit
-                
-                # Using Ollama locally
-                export OLLAMA_MODEL="llama3"
-                git add .
-                ai-commit
-                
-                # Using OpenRouter with Claude
-                export OPENAI_API_KEY="sk-or-..."
-                export OPENAI_BASE_URL="https://openrouter.ai/api/"
-                export OPENAI_MODEL="anthropic/claude-sonnet-4.5
-                git add .
-                ai-commit
-                
-                # Using Google Gemini
-                export GOOGLE_API_KEY="AIza..."
-                git add .
-                ai-commit
-                
-                Note: Use "set" for command prompt and "$env:" for PowerShell instead of "export" if you are using windows
+    private static String loadVersion() {
+        try (InputStream input = AiCommitCli.class.getClassLoader()
+                                                  .getResourceAsStream("version.properties")) {
+            if (input != null) {
+                Properties props = new Properties();
+                props.load(input);
+                return props.getProperty("version", "unknown");
+            }
+        } catch (IOException e) {
+            log.debug("Could not load version from properties", e);
+        }
+        return "unknown";
+    }
 
-            PRIORITY ORDER:
-                If multiple providers are configured, priority is: OpenAI > Google > Ollama
-            
-            For more information: https://github.com/kxng0109/ai-commit-cli
-            """);
+    /**
+     * Configures logging settings for the application.
+     * <p>
+     * This method initializes logging levels and behavior for the application
+     * by setting properties for the Simple SLF4J Logger. It ensures concise and
+     * consistent log output depending on the configured log level.
+     * </p>
+     * <ul>
+     *   <li>The log level can be customized via the {@code AI_LOG_LEVEL} environment variable
+     *       (e.g., ERROR, WARN, INFO, DEBUG). If unspecified, it defaults to {@code WARN}.</li>
+     *   <li>Hides unnecessary details such as timestamps, thread names, and logger names
+     *       to maintain clean log output.</li>
+     * </ul>
+     */
+    private static void configureLogging() {
+        String logLevel = System.getenv().getOrDefault("AI_LOG_LEVEL", "WARN");
+        System.setProperty("org.slf4j.simpleLogger.defaultLogLevel", logLevel);
+        System.setProperty("org.slf4j.simpleLogger.showDateTime", "false");
+        System.setProperty("org.slf4j.simpleLogger.showThreadName", "false");
+        System.setProperty("org.slf4j.simpleLogger.showLogName", "false");
+    }
+
+    /**
+     * Prints the help information and usage instructions for the AI Commit CLI tool.
+     * This method provides a detailed guide on available options, environment variable
+     * configurations, and usage examples for various AI providers. The priority order
+     * for provider selection is also included.
+     * <p>
+     * The printed output includes:
+     * <ul>
+     *   <li>General description of AI Commit functionality.</li>
+     *   <li>Command-line options and their usage.</li>
+     *   <li>Supported AI providers and required configuration environment variables.</li>
+     *   <li>Optional settings for AI behavior and logging.</li>
+     *   <li>Usage examples for setting up and using AI Commit with different providers.</li>
+     *   <li>Provider priority order in case multiple are configured.</li>
+     * </ul>
+     * <p>
+     * This method is typically invoked when the user supplies the {@code -h} or {@code --help} option.
+     */
+    private static void printHelp() {
+        System.out.println("""
+                                   AI Commit - Generate conventional commit messages using AI
+                                   
+                                   USAGE:
+                                       ai-commit [OPTIONS]
+                                   
+                                   OPTIONS:
+                                       -h, --help       Show this help message
+                                       -v, --version    Show version information
+                                   
+                                   ENVIRONMENT VARIABLES:
+                                   
+                                       AI Provider (choose ONE):
+                                   
+                                       1. OpenAI / OpenAI-compatible APIs (OpenRouter, Together, etc.):
+                                          OPENAI_API_KEY           Your API key (required)
+                                          OPENAI_MODEL             Model name (default: gpt-4o)
+                                          OPENAI_BASE_URL          API endpoint (default: https://api.openai.com)
+                                   
+                                       2. Google Gemini:
+                                          GOOGLE_API_KEY           Your API key (required)
+                                          GOOGLE_MODEL             Model name (default: gemini-2.0-flash-exp)
+                                   
+                                       3. Ollama (local models):
+                                          OLLAMA_MODEL             Model name (required, e.g., llama3, qwen2.5)
+                                          OLLAMA_BASE_URL          Server URL (default: http://localhost:11434)
+                                   
+                                       Optional Settings:
+                                          AI_LOG_LEVEL             Log level: ERROR, WARN, INFO, DEBUG (default: WARN)
+                                          AI_TEMPERATURE           Model temperature 0.0-2.0 (default: 0.1)
+                                          AI_COMMAND_TIMEOUT       Git command timeout seconds (default: 30)
+                                   
+                                   EXAMPLES:
+                                   
+                                       # Using OpenAI
+                                       export OPENAI_API_KEY="sk-..."
+                                       git add .
+                                       ai-commit
+                                   
+                                       # Using Ollama locally
+                                       export OLLAMA_MODEL="llama3"
+                                       git add .
+                                       ai-commit
+                                   
+                                       # Using OpenRouter with Claude
+                                       export OPENAI_API_KEY="sk-or-..."
+                                       export OPENAI_BASE_URL="https://openrouter.ai/api/v1"
+                                       export OPENAI_MODEL="anthropic/claude-3.5-sonnet"
+                                       git add .
+                                       ai-commit
+                                   
+                                       # Using Google Gemini
+                                       export GOOGLE_API_KEY="AIza..."
+                                       git add .
+                                       ai-commit
+                                   
+                                   PRIORITY ORDER:
+                                       If multiple providers are configured, priority is: OpenAI > Google > Ollama
+                                   
+                                   For more information: https://github.com/kxng0109/ai-commit-cli
+                                   """);
     }
 }

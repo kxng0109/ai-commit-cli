@@ -2,19 +2,50 @@ package io.github.kxng0109.service;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.chat.messages.SystemMessage;
+import org.springframework.ai.chat.messages.UserMessage;
+import org.springframework.ai.chat.model.ChatModel;
+import org.springframework.ai.chat.prompt.Prompt;
 
 import java.net.ConnectException;
+import java.util.List;
 
 /**
- * The CommitService class facilitates the generation and execution of commit
- * messages for staged changes in a Git repository. It leverages an AI-based
- * io.github.kxng0109.config.service to create commit messages that adhere to standards, providing a
- * streamlined approach for developers to commit changes efficiently.
+ * The {@code CommitService} class provides functionality to automate the process of generating
+ * and committing a high-quality, AI-assisted Git commit message for staged changes in a repository.
+ * <p>
+ * This service integrates with a given {@link GitService} for Git operations and a {@link ChatModel}
+ * for AI-driven commit message generation. It ensures that commit messages adhere to standardized formats
+ * and enhances productivity while maintaining consistency.
+ * </p>
+ *
+ * <h2>Key Features:</h2>
+ * <ul>
+ *   <li>Validates the presence of staged changes before commit generation.</li>
+ *   <li>Uses AI to craft precise, professional commit messages based on diff details.</li>
+ *   <li>Displays the generated commit message for user visibility.</li>
+ *   <li>Handles errors such as absent staged changes or AI service connectivity issues gracefully.</li>
+ * </ul>
+ *
+ * <h2>Usage:</h2>
+ * Instantiate the {@code CommitService} with the required {@link GitService} and {@link ChatModel} dependencies.
+ * Call {@link #generateAndCommit()} to automate the commit message creation and commit process.
+ *
+ * <h2>Exceptions:</h2>
+ * <ul>
+ *   <li>{@link IllegalStateException} if no staged changes are available or the AI generates an empty message.</li>
+ *   <li>{@link RuntimeException} for other errors such as connectivity issues with the AI provider.</li>
+ * </ul>
+ *
+ * <h2>Dependencies:</h2>
+ * This class relies on:
+ * <ul>
+ *   <li>{@link GitService} for handling Git commands.</li>
+ *   <li>{@link ChatModel} for generating AI-based commit messages.</li>
+ *   <li>A logging framework ({@link Logger}) for status updates and error tracking.</li>
+ * </ul>
  */
 public class CommitService {
-
-    private static final Logger log = LoggerFactory.getLogger(CommitService.class);
 
     private static final String SYSTEM_PROMPT = """
             You are an expert software engineer and a strict maintainer of a large-scale project. You are reviewing a contribution and your sole task is to write the final commit message for it.
@@ -60,37 +91,32 @@ public class CommitService {
             - DO NOT include any preamble like "Here is the commit message:".
             - DO NOT include any markdown formatting like ```.
             - The very first character of your response must be the first letter of the type.
-            
-            Input Data:
-            
-            {diff}
             """;
 
-    private final GitService gitService;
-    private final ChatClient chatClient;
+    private static final Logger log = LoggerFactory.getLogger(CommitService.class);
 
-    public CommitService(GitService gitService, ChatClient chatClient) {
+    private final GitService gitService;
+    private final ChatModel chatModel;
+
+    public CommitService(GitService gitService, ChatModel chatModel) {
         this.gitService = gitService;
-        this.chatClient = chatClient;
+        this.chatModel = chatModel;
     }
 
     /**
-     * Automatically generates a commit message for the staged changes using an AI-backed io.github.kxng0109.config.service
-     * and commits the changes to the Git repository.
+     * Automates the process of generating an AI-assisted Git commit message and committing staged changes.
+     * <p>
+     * This method checks for existing staged changes in the repository. If no changes are staged, it throws
+     * an {@link IllegalStateException}. Upon detecting staged changes, it fetches the diff details, uses an
+     * AI model to generate a descriptive commit message, displays the generated message, and commits the changes
+     * with the generated message. The output of the Git commit command is then displayed on the console.
+     * </p>
      *
-     * This method checks if there are any staged changes. If no staged changes are found,
-     * it throws an exception prompting the user to stage changes first. When staged changes are found,
-     * it retrieves the diff of those changes, generates a commit message using an AI io.github.kxng0109.config.service, displays
-     * the generated message, and performs the commit operation with the generated message.
-     * If the commit is successful, the Git's command output is displayed.
-     *
-     * @throws IllegalStateException if there are no staged changes in the repository or if the AI io.github.kxng0109.config.service
-     *                               fails to generate a valid commit message.
-     * @throws RuntimeException if connectivity issues or errors occur during the interaction with the AI io.github.kxng0109.config.service.
+     * @throws IllegalStateException if there are no staged changes available
      */
     public void generateAndCommit() {
         log.info("Checking for staged changes...");
-        if(!gitService.hasStagedChanges()){
+        if (!gitService.hasStagedChanges()) {
             throw new IllegalStateException("No staged changes found! Use the 'git add' to stage changes first.");
         }
 
@@ -108,24 +134,26 @@ public class CommitService {
         log.info("Committed changes successfully.");
     }
 
-
     /**
-     * Generates a commit message based on the provided diff by communicating with the AI io.github.kxng0109.config.service.
-     * If the AI io.github.kxng0109.config.service fails to provide a valid commit message or encounters connectivity issues,
-     * appropriate exceptions are thrown.
+     * Generates an AI-crafted message based on the given diff input.
+     * This method utilizes a chat model to process the provided diff and create a meaningful, concise message.
+     * If the generated message is null, empty, or if an error occurs during message generation, appropriate exceptions are thrown.
      *
-     * @param diff the staged changes or differences as a string input for the AI to analyze
-     * @return a generated commit message as a string, trimmed of whitespace
-     * @throws IllegalStateException if the AI returns an empty or blank commit message
-     * @throws RuntimeException if any connectivity issues or errors occur during message generation
+     * @param diff the input string representing the diff
      */
     private String generateMessage(String diff) {
         try {
-            String message = chatClient.prompt()
-                                       .system(SYSTEM_PROMPT)
-                                       .user(diff)
-                                       .call()
-                                       .content();
+            Prompt prompt = new Prompt(
+                    List.of(
+                            new SystemMessage(SYSTEM_PROMPT),
+                            new UserMessage(diff)
+                    )
+            );
+
+            String message = chatModel.call(prompt)
+                                      .getResult()
+                                      .getOutput()
+                                      .getText();
 
             if (message == null || message.isBlank()) {
                 throw new IllegalStateException("AI returned an empty commit message");
@@ -139,7 +167,8 @@ public class CommitService {
             while (cause != null) {
                 if (cause instanceof ConnectException) {
                     throw new RuntimeException(
-                            "Cannot connect to AI provider. Check your internet connection and verify the provider is accessible.", e
+                            "Cannot connect to AI provider. Check your internet connection and verify the provider is accessible.",
+                            e
                     );
                 }
                 cause = cause.getCause();
@@ -150,10 +179,10 @@ public class CommitService {
     }
 
     /**
-     * Displays the provided message in a formatted style to the console.
-     * This includes a header, a separator line, and the message content.
+     * Displays the provided AI-generated commit message in a formatted manner to the console.
+     * This method includes a header, footer, and blank line for better readability.
      *
-     * @param message the message to be displayed in the console
+     * @param message the AI-generated commit message to display
      */
     private void displayMessage(String message) {
         System.out.println();
@@ -164,11 +193,13 @@ public class CommitService {
     }
 
     /**
-     * Displays the provided Git output to the console.
+     * Displays the output of a Git command to the console.
+     * This method adds a blank line before printing the given output,
+     * ensuring better readability in the console.
      *
-     * @param output the output generated from a Git operation to be displayed
+     * @param output the string output of a Git command to be displayed in the console
      */
-    private void displayGitOutput(String output){
+    private void displayGitOutput(String output) {
         System.out.println();
         System.out.println(output);
     }

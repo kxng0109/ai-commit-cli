@@ -4,7 +4,7 @@ import com.google.genai.Client;
 import io.github.kxng0109.config.Config;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.google.genai.GoogleGenAiChatModel;
 import org.springframework.ai.google.genai.GoogleGenAiChatOptions;
 import org.springframework.ai.ollama.OllamaChatModel;
@@ -16,46 +16,71 @@ import org.springframework.ai.openai.api.OpenAiApi;
 import org.springframework.web.client.DefaultResponseErrorHandler;
 
 /**
- * A factory class for creating instances of {@code ChatClient} based on the configured AI provider.
- * This class supports multiple AI providers including OpenAI, Google Gemini, and Ollama. It ensures
- * proper initialization of the client using the settings provided in the {@code Config} object.
+ * Factory class for creating instances of {@code ChatModel} for various AI providers
+ * including OpenAI, Google Generative AI (Gemini), and Ollama. The factory dynamically selects
+ * the appropriate provider based on the provided configuration and initializes the respective model.
+ * <p>
+ * This class is designed as a utility class and cannot be instantiated.
+ * </p>
  *
- * This class cannot be instantiated as it is designed to provide static factory methods.
+ * <h2>Supported AI Providers</h2>
+ * <ul>
+ *     <li>OpenAI / OpenAI-compatible APIs</li>
+ *     <li>Google Generative AI (Gemini)</li>
+ *     <li>Ollama (local or hosted)</li>
+ * </ul>
+ *
+ * <h2>Usage</h2>
+ * Use the {@link #createChatModel(Config)} method to obtain an instance
+ * of a configured {@code ChatModel} based on the provided {@code Config} object.
+ * Ensure that the configuration specifies at least one valid AI provider.
+ *
+ * <h3>Exceptions</h3>
+ * If no AI provider is configured, an {@code IllegalStateException} is thrown
+ * with detailed guidance for setting up the supported providers.
+ *
+ * <h2>Thread Safety</h2>
+ * This class is thread-safe as it contains only static methods and immutable configuration logic.
+ *
+ * @see Config
+ * @see ChatModel
  */
 public class AiProviderFactory {
 
     private static final Logger log = LoggerFactory.getLogger(AiProviderFactory.class);
 
     private AiProviderFactory() {
+        throw new UnsupportedOperationException("Utility class");
     }
 
     /**
-     * Creates a {@code ChatClient} instance based on the provided configuration.
-     * The method selects and configures an appropriate AI provider (OpenAI, Google, or Ollama)
-     * depending on the information present in the {@code Config} object.
+     * Creates a {@code ChatModel} based on the configuration provided.
+     * The method dynamically determines the appropriate AI provider (OpenAI, Google Gemini, or Ollama)
+     * from the {@code Config} object and initializes the respective {@code ChatModel}.
+     * If no provider is configured, it throws an {@code IllegalStateException}.
      *
-     * @param config the configuration object containing details for integrating with the AI provider,
-     *               such as API key, base URL, model, and other necessary settings
-     * @return a fully initialized {@code ChatClient} for the specified AI provider if configured;
-     *         otherwise, throws an {@code IllegalStateException} if no provider is configured
+     * @param config the {@code Config} object containing details such as API keys, base URLs,
+     *               model names, and optional settings to integrate with supported AI providers.
+     * @return a fully initialized {@code ChatModel} for the configured provider.
+     * @throws IllegalStateException if no AI provider is configured in the {@code Config} object.
      */
-    public static ChatClient createChatClient(Config config) {
+    public static ChatModel createChatModel(Config config) {
         if (config.openai().isConfigured()) {
-            log.info("OpenAI Chat Client is configured. Using OpenAI-compatible provider");
+            log.info("Using OpenAI-compatible provider");
             log.debug("Base URL: {}. Model: {}", config.openai().baseUrl(), config.openai().model());
-            return createOpenAiClient(config);
+            return createOpenAiModel(config);
         }
 
         if (config.google().isConfigured()) {
-            log.info("Google Chat Client is configured. Using Google Gemini provider");
+            log.info("Using Google Gemini provider");
             log.debug("Model: {}", config.google().model());
-            return createGoogleClient(config);
+            return createGoogleModel(config);
         }
 
         if (config.ollama().isConfigured()) {
             log.info("Ollama is configured, Using Ollama provider.");
             log.debug("Base URL: {}. Model: {}", config.ollama().baseUrl(), config.ollama().model());
-            return createOllamaClient(config);
+            return createOllamaModel(config);
         }
 
         throw new IllegalStateException(
@@ -75,22 +100,21 @@ public class AiProviderFactory {
                                        export OLLAMA_MODEL="llama3"
                                        export OLLAMA_BASE_URL="http://localhost:11434"  # optional
                         
-                                    Note: Use "set" for command prompt and "$env:" for PowerShell instead of "export" if you are using windows
                                     Run 'ai-commit --help' for more information.
                         """
         );
     }
 
     /**
-     * Creates a {@code ChatClient} instance configured to interact with the OpenAI API.
-     * Uses settings from the provided {@code Config} object, including API key, base URL,
-     * model, and temperature.
+     * Creates a {@code ChatModel} instance specifically configured to interact with the OpenAI API.
+     * This method initializes the necessary API client and sets up default chat options, such as
+     * the model and temperature, based on the provided {@code Config} object.
      *
-     * @param config the configuration object containing all the necessary details to
-     *               integrate with the OpenAI API, such as API key, base URL, model, and temperature
-     * @return a fully configured {@code ChatClient} for interacting with the OpenAI API
+     * @param config the configuration object containing the required details for integrating with
+     *               the OpenAI API, including API key, base URL, model name, and temperature settings
+     * @return a fully configured {@code ChatModel} for interacting with the OpenAI API
      */
-    private static ChatClient createOpenAiClient(Config config) {
+    private static ChatModel createOpenAiModel(Config config) {
         OpenAiApi api = OpenAiApi.builder()
                                  .apiKey(config.openai().apiKey())
                                  .baseUrl(config.openai().baseUrl())
@@ -102,66 +126,61 @@ public class AiProviderFactory {
                                                      .temperature(config.temperature())
                                                      .build();
 
-        OpenAiChatModel model = OpenAiChatModel.builder()
-                                               .openAiApi(api)
-                                               .defaultOptions(options)
-                                               .build();
-
-        return ChatClient.builder(model).build();
+        return OpenAiChatModel.builder()
+                              .openAiApi(api)
+                              .defaultOptions(options)
+                              .build();
     }
 
     /**
-     * Creates a {@code ChatClient} instance configured to interact with Google's AI services.
-     * Uses settings from the provided {@code Config} object, including API key, model,
-     * and temperature configuration.
+     * Creates a {@code ChatModel} instance specifically configured to interact with the Google Generative AI API.
+     * This method initializes the required client and sets up chat options such as temperature and model,
+     * based on the provided {@code Config} object.
      *
-     * @param config the configuration object containing the necessary details to integrate with
-     *               Google's AI services, such as API key, model, and temperature settings
-     * @return a fully configured {@code ChatClient} for interacting with Google's AI services
+     * @param config the configuration object containing the necessary details for integrating with the
+     *               Google Generative AI API, including API key, model, and temperature settings
+     * @return a fully configured {@code ChatModel} for interacting with the Google Generative AI API
      */
-    private static ChatClient createGoogleClient(Config config) {
+    private static ChatModel createGoogleModel(Config config) {
         Client client = Client.builder()
-                              .apiKey(config.openai().apiKey())
+                              .apiKey(config.google().apiKey())
                               .build();
 
         GoogleGenAiChatOptions options = GoogleGenAiChatOptions.builder()
                                                                .temperature(config.temperature())
-                                                               .model(config.openai().model())
+                                                               .model(config.google().model())
                                                                .build();
 
-        GoogleGenAiChatModel model = GoogleGenAiChatModel.builder()
-                                                         .defaultOptions(options)
-                                                         .genAiClient(client)
-                                                         .build();
-
-        return ChatClient.builder(model).build();
+        return GoogleGenAiChatModel.builder()
+                                   .defaultOptions(options)
+                                   .genAiClient(client)
+                                   .build();
     }
 
     /**
-     * Creates a {@code ChatClient} instance configured to interact with Ollama's AI services.
-     * This method uses settings from the provided {@code Config} object, including the base URL,
-     * model name, and temperature to properly initialize the client.
+     * Creates a {@code ChatModel} instance specifically configured to interact with the Ollama API.
+     * Utilizes the provided {@code Config} object to set up the necessary API client, chat options,
+     * and other configuration details such as base URL, model, and temperature settings.
      *
-     * @param config the configuration object containing the necessary details to integrate with
-     *               Ollama's services, such as the base URL, model name, and temperature settings
-     * @return a fully configured {@code ChatClient} for interacting with Ollama's AI services
+     * @param config the configuration object containing the required details
+     *               to integrate with the Ollama API, including base URL,
+     *               model name, and temperature settings
+     * @return a fully configured {@code ChatModel} for interacting with the Ollama API
      */
-    private static ChatClient createOllamaClient(Config config) {
+    private static ChatModel createOllamaModel(Config config) {
         OllamaApi api = OllamaApi.builder()
-                .baseUrl(config.ollama().baseUrl())
-                .responseErrorHandler(new DefaultResponseErrorHandler())
-                .build();
+                                 .baseUrl(config.ollama().baseUrl())
+                                 .responseErrorHandler(new DefaultResponseErrorHandler())
+                                 .build();
 
         OllamaChatOptions options = OllamaChatOptions.builder()
-                .model(config.ollama().model())
-                .temperature(config.temperature())
-                .build();
+                                                     .model(config.ollama().model())
+                                                     .temperature(config.temperature())
+                                                     .build();
 
-        OllamaChatModel model = OllamaChatModel.builder()
-                .ollamaApi(api)
-                .defaultOptions(options)
-                .build();
-
-        return ChatClient.builder(model).build();
+        return OllamaChatModel.builder()
+                              .ollamaApi(api)
+                              .defaultOptions(options)
+                              .build();
     }
 }

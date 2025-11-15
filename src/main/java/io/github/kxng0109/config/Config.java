@@ -1,12 +1,19 @@
 package io.github.kxng0109.config;
 
 /**
- * Encapsulates configuration details for integrating with OpenAI, Google, and Ollama services,
- * as well as AI-specific parameters such as temperature and command timeout duration.
- * Uses nested record types {@code OpenAiConfig}, {@code GoogleConfig}, and {@code OllamaConfig}
- * for modular representation of io.github.kxng0109.config.service-specific settings.
- * Provides functionality to load configurations from environment variables while supporting
- * default values when variables are not explicitly set.
+ * The {@code Config} record encapsulates configuration settings for multiple services,
+ * including OpenAI, Google, and Ollama, along with additional parameters for AI behavior
+ * and command execution.
+ *
+ * <p>This class provides a mechanism to load the configuration settings from environment variables,
+ * allowing customization of service APIs and operational parameters through external properties.
+ * Default values are used where environment variables are not set or invalid.</p>
+ *
+ * @param openai                the {@link OpenAiConfig} containing OpenAI-related API settings.
+ * @param google                the {@link GoogleConfig} containing Google-related API settings.
+ * @param ollama                the {@link OllamaConfig} containing Ollama service configuration.
+ * @param temperature           the temperature value as a double used for AI response variability.
+ * @param commandTimeoutSeconds the timeout value (in seconds) for command execution.
  */
 public record Config(
         OpenAiConfig openai,
@@ -16,12 +23,16 @@ public record Config(
         int commandTimeoutSeconds
 ) {
     /**
-     * Loads a {@code Config} object using environment variables to configure OpenAI, Google,
-     * and Ollama services, along with AI parameters such as temperature and timeout duration.
-     * If any required environment variables are not set, default values are used.
+     * Loads configuration settings for multiple services (OpenAI, Google, and Ollama)
+     * from environment variables. If specific environment variables are not set,
+     * default values are applied for certain configurations.
+     * <p>
+     * The method creates instances of {@link OpenAiConfig}, {@link GoogleConfig}, and {@link OllamaConfig}
+     * using the relevant environment variables (or defaults). It also sets a temperature for AI-related
+     * operations and a timeout duration for execution commands.
      *
-     * @return a {@code Config} object initialized with the necessary io.github.kxng0109.config.service configurations
-     * and parameters.
+     * @return a {@link Config} object encapsulating environment-based configuration settings,
+     * including API keys, base URLs, models, temperature, and timeout values.
      */
     public static Config loadFromEnv() {
         OpenAiConfig openai = new OpenAiConfig(
@@ -58,6 +69,53 @@ public record Config(
     }
 
     /**
+     * Retrieves the value of an environment variable by its key. If the specified
+     * environment variable is not set or contains a blank value, a default value is returned.
+     *
+     * @param key          the name of the environment variable to retrieve.
+     * @param defaultValue the value to return if the environment variable is not set
+     *                     or contains a blank value.
+     * @return the value of the environment variable if set and non-blank; otherwise,
+     * the specified default value.
+     */
+    private static String getEnvOrDefault(String key, String defaultValue) {
+        String value = System.getenv(key);
+        return (value == null || value.isBlank()) ? defaultValue : value;
+    }
+
+    /**
+     * Parses the given string into a double value. If the parsing fails due to a {@code NumberFormatException},
+     * or if the parsed value is not within the range [0.0, 1.0], a default value of {@code 0.1} is returned.
+     *
+     * @param value the string to be parsed into a double.
+     * @return the parsed double value between 0.0 and 1.0 (inclusive), or 0.1 if the input is invalid or out of range.
+     */
+    private static double parseDouble(String value) {
+        try {
+            double parsed = Double.parseDouble(value);
+            return (parsed < 0.0 || parsed > 1.0) ? 0.1 : parsed;
+        } catch (NumberFormatException e) {
+            return 0.1;
+        }
+    }
+
+    /**
+     * Parses the given string into an integer value. If the parsing fails due to a {@code NumberFormatException},
+     * or if the parsed integer is not within the range (1 to 3599), a default value of {@code 30} is returned.
+     *
+     * @param value the string to be parsed into an integer.
+     * @return the parsed integer value between 1 and 3599 (inclusive), or 30 if the input is invalid or out of range.
+     */
+    private static int parseInt(String value) {
+        try {
+            int i = Integer.parseInt(value);
+            return (i > 0 && i < 3600) ? i : 30;
+        } catch (NumberFormatException e) {
+            return 30;
+        }
+    }
+
+    /**
      * Represents the configuration settings for OpenAI.
      * This configuration includes the API key, base URL, and model name
      * required to interact with the OpenAI API.
@@ -73,12 +131,11 @@ public record Config(
     }
 
     /**
-     * Represents the configuration settings for Google's AI services.
-     * This configuration includes the API key and model name required to interact
-     * with Google's AI functionalities.
+     * Represents the configuration settings required to interact with Google services.
+     * This record encapsulates the API key and the default model used for Google-related operations.
      *
-     * @param apiKey the API key used to authenticate requests to Google's AI services
-     * @param model  the default model to use for Google's AI requests
+     * @param apiKey the API key used to authenticate requests to Google APIs.
+     * @param model  the name of the default model to use within Google services.
      */
     public record GoogleConfig(String apiKey, String model) {
         public boolean isConfigured() {
@@ -87,59 +144,16 @@ public record Config(
     }
 
     /**
-     * Represents the configuration settings for Ollama services.
-     * This configuration includes the model name and base URL required
-     * to interact with Ollama's AI functionalities.
+     * Represents the configuration for the Ollama service.
+     * This record encapsulates the model name and base URL required
+     * to interact with the Ollama API.
      *
-     * @param model   the default model to use for Ollama requests
-     * @param baseUrl the base URL of the Ollama io.github.kxng0109.config.service
+     * @param model   the name of the Ollama model to use for requests.
+     * @param baseUrl the base URL of the Ollama API endpoint.
      */
     public record OllamaConfig(String model, String baseUrl) {
         public boolean isConfigured() {
             return model != null && !model.isBlank();
-        }
-    }
-
-    /**
-     * Retrieves the value of an environment variable identified by the specified key.
-     * If the environment variable is not set or is blank, returns the provided default value.
-     *
-     * @param key          the name of the environment variable to retrieve.
-     * @param defaultValue the value to return if the environment variable is not set or is blank.
-     * @return the value of the environment variable, or the default value if the environment variable is not set or is blank.
-     */
-    private static String getEnvOrDefault(String key, String defaultValue) {
-        String value = System.getenv(key);
-        return (value == null || value.isBlank()) ? defaultValue : value;
-    }
-
-    /**
-     * Parses the given string into a double value. If the parsing fails due to a
-     * {@code NumberFormatException}, a default value of 0.1 is returned.
-     *
-     * @param value the string to be parsed into a double.
-     * @return the parsed double value, or 0.1 if the input string cannot be successfully parsed.
-     */
-    private static double parseDouble(String value) {
-        try {
-            return Double.parseDouble(value);
-        } catch (NumberFormatException e) {
-            return 0.1;
-        }
-    }
-
-    /**
-     * Parses the given string into an integer value. If the parsing fails due to
-     * a {@code NumberFormatException}, a default value of 30 is returned.
-     *
-     * @param value the string to be parsed into an integer.
-     * @return the parsed integer value, or 30 if the input string cannot be successfully parsed.
-     */
-    private static int parseInt(String value) {
-        try {
-            return Integer.parseInt(value);
-        } catch (NumberFormatException e) {
-            return 30;
         }
     }
 }
