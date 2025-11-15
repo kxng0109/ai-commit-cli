@@ -25,7 +25,7 @@ public record Config(
      */
     public static Config loadFromEnv() {
         OpenAiConfig openai = new OpenAiConfig(
-                System.getenv("OPENAPI_API_KEY"),
+                System.getenv("OPENAI_API_KEY"),
                 getEnvOrDefault("OPENAI_BASE_URL", "https://api.openai.com"),
                 getEnvOrDefault("OPENAI_MODEL", "gpt-4o")
         );

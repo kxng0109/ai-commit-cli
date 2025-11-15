@@ -114,7 +114,7 @@ public class AiCommitCli {
                 
                 Optional Settings:
                    AI_LOG_LEVEL             Log level: ERROR, WARN, INFO, DEBUG (default: WARN)
-                   AI_TEMPERATURE           Model temperature 0.0-2.0 (default: 0.1)
+                   AI_TEMPERATURE           Model temperature 0.0-1.0 (default: 0.1)
                    AI_COMMAND_TIMEOUT       Git command timeout seconds (default: 30)
             
             EXAMPLES:
