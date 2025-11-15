@@ -1,49 +1,60 @@
 package io.github.kxng0109.config;
 
 /**
- * The {@code Config} record encapsulates configuration settings for multiple services,
- * including OpenAI, Google, and Ollama, along with additional parameters for AI behavior
- * and command execution.
+ * Represents the main configuration object for an application integrating multiple AI services.
+ * This configuration class aggregates settings for OpenAI, Anthropic, Google, Deepseek, Ollama,
+ * along with general settings such as AI temperature and command timeout.
  *
- * <p>This class provides a mechanism to load the configuration settings from environment variables,
- * allowing customization of service APIs and operational parameters through external properties.
- * Default values are used where environment variables are not set or invalid.</p>
+ * <p>Instances of this record are typically constructed using the {@code loadFromEnv()} method,
+ * which reads the necessary settings from environment variables and applies defaults where needed.</p>
  *
- * @param openai                the {@link OpenAiConfig} containing OpenAI-related API settings.
- * @param google                the {@link GoogleConfig} containing Google-related API settings.
- * @param ollama                the {@link OllamaConfig} containing Ollama service configuration.
- * @param temperature           the temperature value as a double used for AI response variability.
- * @param commandTimeoutSeconds the timeout value (in seconds) for command execution.
+ * @param openai              configuration for OpenAI services, including API key, base URL, and model.
+ * @param anthropic           configuration for Anthropic services, including API key and model.
+ * @param google              configuration for Google services, including API key and model.
+ * @param deepseek            configuration for Deepseek services, including the API key.
+ * @param ollama              configuration for Ollama services, including model and base URL.
+ * @param temperature         a double representing the AI's temperature (creativity level) ranging
+ *                             from 0.0 (deterministic) to 1.0 (high creativity).
+ * @param commandTimeoutSeconds an integer specifying the timeout (in seconds) for AI command executions,
+ *                              within a valid range of 1 to 3599 seconds.
  */
 public record Config(
         OpenAiConfig openai,
+        AnthropicConfig anthropic,
         GoogleConfig google,
+        DeepseekConfig deepseek,
         OllamaConfig ollama,
         double temperature,
         int commandTimeoutSeconds
 ) {
     /**
-     * Loads configuration settings for multiple services (OpenAI, Google, and Ollama)
-     * from environment variables. If specific environment variables are not set,
-     * default values are applied for certain configurations.
-     * <p>
-     * The method creates instances of {@link OpenAiConfig}, {@link GoogleConfig}, and {@link OllamaConfig}
-     * using the relevant environment variables (or defaults). It also sets a temperature for AI-related
-     * operations and a timeout duration for execution commands.
+     * Loads and constructs a {@link Config} object using the environment variables.
+     * This method retrieves configuration data for various APIs (OpenAI, Anthropic, Google,
+     * Deepseek, Ollama) and additionally parses settings such as AI temperature and timeout.
+     * Defaults are applied when respective environment variables are not configured.
      *
-     * @return a {@link Config} object encapsulating environment-based configuration settings,
-     * including API keys, base URLs, models, temperature, and timeout values.
+     * @return a fully initialized {@link Config} instance containing all API-specific configurations
+     *         and general application settings such as temperature and timeout.
      */
     public static Config loadFromEnv() {
         OpenAiConfig openai = new OpenAiConfig(
                 System.getenv("OPENAI_API_KEY"),
                 getEnvOrDefault("OPENAI_BASE_URL", "https://api.openai.com"),
-                getEnvOrDefault("OPENAI_MODEL", "gpt-4o")
+                getEnvOrDefault("OPENAI_MODEL", "gpt-4o-mini")
+        );
+
+        AnthropicConfig anthropic = new AnthropicConfig(
+                System.getenv("ANTHROPIC_API_KEY"),
+                getEnvOrDefault("ANTHROPIC_MODEL", "claude-sonnet-4-0")
         );
 
         GoogleConfig google = new GoogleConfig(
                 System.getenv("GOOGLE_API_KEY"),
-                getEnvOrDefault("GOOGLE_MODEL", "gemini-pro")
+                getEnvOrDefault("GOOGLE_MODEL", "gemini-2.0-flash")
+        );
+
+        DeepseekConfig deepseek = new DeepseekConfig(
+                System.getenv("DEEPSEEK_API_KEY")
         );
 
         OllamaConfig ollama = new OllamaConfig(
@@ -61,7 +72,9 @@ public record Config(
 
         return new Config(
                 openai,
+                anthropic,
                 google,
+                deepseek,
                 ollama,
                 temperature,
                 timeout
@@ -144,6 +157,32 @@ public record Config(
     }
 
     /**
+     * Represents the configuration settings for the Anthropic API.
+     * This record contains the necessary credentials and model information
+     * to interact with the Anthropic services.
+     *
+     * @param apiKey the API key used to authenticate requests to the Anthropic API.
+     * @param model  the name of the model to use for Anthropic operations.
+     */
+    public record AnthropicConfig(String apiKey, String model){
+        public boolean isConfigured() {
+            return apiKey != null && !apiKey.isBlank();
+        }
+    }
+
+    /**
+     * Represents the configuration settings required for Deepseek operations.
+     * This record holds the necessary API key to authenticate requests.
+     *
+     * @param apiKey the API key used to authenticate requests for Deepseek.
+     */
+    public record DeepseekConfig(String apiKey){
+        public boolean isConfigured() {
+            return apiKey != null && !apiKey.isBlank();
+        }
+    }
+
+    /**
      * Represents the configuration for the Ollama service.
      * This record encapsulates the model name and base URL required
      * to interact with the Ollama API.
@@ -156,4 +195,5 @@ public record Config(
             return model != null && !model.isBlank();
         }
     }
+
 }

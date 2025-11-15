@@ -4,7 +4,13 @@ import com.google.genai.Client;
 import io.github.kxng0109.config.Config;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.ai.anthropic.AnthropicChatModel;
+import org.springframework.ai.anthropic.AnthropicChatOptions;
+import org.springframework.ai.anthropic.api.AnthropicApi;
 import org.springframework.ai.chat.model.ChatModel;
+import org.springframework.ai.deepseek.DeepSeekChatModel;
+import org.springframework.ai.deepseek.DeepSeekChatOptions;
+import org.springframework.ai.deepseek.api.DeepSeekApi;
 import org.springframework.ai.google.genai.GoogleGenAiChatModel;
 import org.springframework.ai.google.genai.GoogleGenAiChatOptions;
 import org.springframework.ai.ollama.OllamaChatModel;
@@ -16,34 +22,29 @@ import org.springframework.ai.openai.api.OpenAiApi;
 import org.springframework.web.client.DefaultResponseErrorHandler;
 
 /**
- * Factory class for creating instances of {@code ChatModel} for various AI providers
- * including OpenAI, Google Generative AI (Gemini), and Ollama. The factory dynamically selects
- * the appropriate provider based on the provided configuration and initializes the respective model.
- * <p>
- * This class is designed as a utility class and cannot be instantiated.
- * </p>
+ * Factory class for creating instances of {@code ChatModel} based on configuration.
+ * This utility provides functionality to automatically select and initialize the
+ * appropriate AI provider (e.g., OpenAI, Anthropic, Google, Deepseek, or Ollama)
+ * based on the provided {@code Config}.
  *
- * <h2>Supported AI Providers</h2>
+ * <p>This class is designed as a utility and cannot be instantiated, ensuring
+ * adherence to the singleton-like design for shared logic.</p>
+ *
  * <ul>
- *     <li>OpenAI / OpenAI-compatible APIs</li>
- *     <li>Google Generative AI (Gemini)</li>
- *     <li>Ollama (local or hosted)</li>
+ * Key Features:
+ * <li>Supports multiple AI providers with seamless integration.</li>
+ * <li>Ensures AI model configuration based on the primary detected provider.</li>
+ * <li>Throws proper exceptions for missing or invalid configurations.</li>
  * </ul>
  *
- * <h2>Usage</h2>
- * Use the {@link #createChatModel(Config)} method to obtain an instance
- * of a configured {@code ChatModel} based on the provided {@code Config} object.
- * Ensure that the configuration specifies at least one valid AI provider.
+ * <p>Example Usage:</p>
+ * <pre>{@code
+ * Config config = ...; // Set up with API keys, base URLs, and models
+ * ChatModel chatModel = AiProviderFactory.createChatModel(config);
+ * }</pre>
  *
- * <h3>Exceptions</h3>
- * If no AI provider is configured, an {@code IllegalStateException} is thrown
- * with detailed guidance for setting up the supported providers.
- *
- * <h2>Thread Safety</h2>
- * This class is thread-safe as it contains only static methods and immutable configuration logic.
- *
- * @see Config
- * @see ChatModel
+ * <p>This factory handles all provider-specific details, offering a unified method
+ * for accessing AI chat functionalities without needing to manually implement provider logic.</p>
  */
 public class AiProviderFactory {
 
@@ -54,15 +55,19 @@ public class AiProviderFactory {
     }
 
     /**
-     * Creates a {@code ChatModel} based on the configuration provided.
-     * The method dynamically determines the appropriate AI provider (OpenAI, Google Gemini, or Ollama)
-     * from the {@code Config} object and initializes the respective {@code ChatModel}.
-     * If no provider is configured, it throws an {@code IllegalStateException}.
+     * Creates a {@code ChatModel} instance based on the provided configuration.
+     * This method automatically selects the appropriate AI provider (e.g., OpenAI, Anthropic, Google, Deepseek, or Ollama)
+     * based on the configured settings, initializes the provider-specific model, and returns a fully configured
+     * {@code ChatModel} instance.
      *
-     * @param config the {@code Config} object containing details such as API keys, base URLs,
-     *               model names, and optional settings to integrate with supported AI providers.
-     * @return a fully initialized {@code ChatModel} for the configured provider.
-     * @throws IllegalStateException if no AI provider is configured in the {@code Config} object.
+     * If no AI provider is configured, an {@code IllegalStateException} is thrown with guidance
+     * on setting up the configuration.
+     *
+     * @param config the configuration object containing necessary details for integrating with various
+     *               AI providers, such as API keys, base URLs, model names, and other provider-specific settings.
+     * @return a fully configured {@code ChatModel} instance corresponding to the first detected, properly
+     *         configured AI provider.
+     * @throws IllegalStateException if no AI provider is configured.
      */
     public static ChatModel createChatModel(Config config) {
         if (config.openai().isConfigured()) {
@@ -71,10 +76,21 @@ public class AiProviderFactory {
             return createOpenAiModel(config);
         }
 
+        if (config.anthropic().isConfigured()) {
+            log.info("Using Anthropic provider");
+            log.debug("Model: {}", config.anthropic().model());
+            return createAnthropicModel(config);
+        }
+
         if (config.google().isConfigured()) {
             log.info("Using Google Gemini provider");
             log.debug("Model: {}", config.google().model());
             return createGoogleModel(config);
+        }
+
+        if (config.deepseek().isConfigured()) {
+            log.info("Using Deepseek provider");
+            return createDeepseekModel(config);
         }
 
         if (config.ollama().isConfigured()) {
@@ -92,11 +108,18 @@ public class AiProviderFactory {
                                        export OPENAI_MODEL="gpt-4o"  # optional
                                        export OPENAI_BASE_URL="https://api.openai.com"  # optional
                         
-                                    2. Google Gemini:
+                                    2. Anthropic Claude:
+                                       export ANTHROPIC_API_KEY="your-api-key"
+                                       export ANTHROPIC_MODEL="claude-sonnet-4-0"  # optional
+                        
+                                    3. Google Gemini:
                                        export GOOGLE_API_KEY="your-api-key"
                                        export GOOGLE_MODEL="gemini-2.0-flash-exp"  # optional
                         
-                                    3. Ollama (local):
+                                    4. Deepseek:
+                                       export DEEPSEEK_API_KEY="your-api-key"
+                        
+                                    5. Ollama (local):
                                        export OLLAMA_MODEL="llama3"
                                        export OLLAMA_BASE_URL="http://localhost:11434"  # optional
                         
@@ -155,6 +178,57 @@ public class AiProviderFactory {
                                    .defaultOptions(options)
                                    .genAiClient(client)
                                    .build();
+    }
+
+    /**
+     * Creates a {@code ChatModel} instance specifically configured to interact with the Anthropic API.
+     * This method initializes the required {@code AnthropicApi} client and sets up default chat options,
+     * including the model and temperature, based on the provided {@code Config} object.
+     *
+     * @param config the configuration object containing the required details for integrating with
+     *               the Anthropic API, such as API key, model name, and temperature settings
+     * @return a fully configured {@code ChatModel} for interacting with the Anthropic API
+     */
+    private static ChatModel createAnthropicModel(Config config) {
+        AnthropicApi api = AnthropicApi.builder()
+                                       .apiKey(config.anthropic().apiKey())
+                                       .responseErrorHandler(new DefaultResponseErrorHandler())
+                                       .build();
+
+        AnthropicChatOptions options = AnthropicChatOptions.builder()
+                                                           .model(config.anthropic().model())
+                                                           .temperature(config.temperature())
+                                                           .build();
+
+        return AnthropicChatModel.builder()
+                                 .defaultOptions(options)
+                                 .anthropicApi(api)
+                                 .build();
+    }
+
+    /**
+     * Creates a {@code ChatModel} instance specifically configured to interact with the DeepSeek API.
+     * This method initializes the required DeepSeek API client and sets up default chat options,
+     * including the temperature, based on the provided {@code Config} object.
+     *
+     * @param config the configuration object containing the necessary details for integrating
+     *               with the DeepSeek API, such as API key and temperature settings.
+     * @return a fully configured {@code ChatModel} for interacting with the DeepSeek API.
+     */
+    private static ChatModel createDeepseekModel(Config config) {
+        DeepSeekApi api = DeepSeekApi.builder()
+                                     .apiKey(config.deepseek().apiKey())
+                                     .responseErrorHandler(new DefaultResponseErrorHandler())
+                                     .build();
+
+        DeepSeekChatOptions options = DeepSeekChatOptions.builder()
+                                                         .temperature(config.temperature())
+                                                         .build();
+
+        return DeepSeekChatModel.builder()
+                                .deepSeekApi(api)
+                                .defaultOptions(options)
+                                .build();
     }
 
     /**

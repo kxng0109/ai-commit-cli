@@ -161,14 +161,21 @@ public class AiCommitCli {
                                    
                                        1. OpenAI / OpenAI-compatible APIs (OpenRouter, Together, etc.):
                                           OPENAI_API_KEY           Your API key (required)
-                                          OPENAI_MODEL             Model name (default: gpt-4o)
+                                          OPENAI_MODEL             Model name (default: gpt-4o-mini)
                                           OPENAI_BASE_URL          API endpoint (default: https://api.openai.com)
                                    
-                                       2. Google Gemini:
-                                          GOOGLE_API_KEY           Your API key (required)
-                                          GOOGLE_MODEL             Model name (default: gemini-2.0-flash-exp)
+                                       2. Anthropic:
+                                          ANTHROPIC_API_KEY           Your API key (required)
+                                          ANTHROPIC_MODEL             Model name (default: claude-sonnet-4-0)
                                    
-                                       3. Ollama (local models):
+                                       3. Google Gemini:
+                                          GOOGLE_API_KEY           Your API key (required)
+                                          GOOGLE_MODEL             Model name (default: gemini-2.0-flash)
+                                   
+                                       4. Deepseek:
+                                          DEEPSEEK_API_KEY           Your API key (required)
+                                   
+                                       5. Ollama (local models):
                                           OLLAMA_MODEL             Model name (required, e.g., llama3, qwen2.5)
                                           OLLAMA_BASE_URL          Server URL (default: http://localhost:11434)
                                    
@@ -202,7 +209,7 @@ public class AiCommitCli {
                                        ai-commit
                                    
                                    PRIORITY ORDER:
-                                       If multiple providers are configured, priority is: OpenAI > Google > Ollama
+                                       If multiple providers are configured, priority is: OpenAI > Anthropic > Google > Deepseek > Ollama
                                    
                                    For more information: https://github.com/kxng0109/ai-commit-cli
                                    """);
