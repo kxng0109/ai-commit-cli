@@ -59,14 +59,14 @@ public class AiProviderFactory {
      * This method automatically selects the appropriate AI provider (e.g., OpenAI, Anthropic, Google, Deepseek, or Ollama)
      * based on the configured settings, initializes the provider-specific model, and returns a fully configured
      * {@code ChatModel} instance.
-     *
+     * <p>
      * If no AI provider is configured, an {@code IllegalStateException} is thrown with guidance
      * on setting up the configuration.
      *
      * @param config the configuration object containing necessary details for integrating with various
      *               AI providers, such as API keys, base URLs, model names, and other provider-specific settings.
      * @return a fully configured {@code ChatModel} instance corresponding to the first detected, properly
-     *         configured AI provider.
+     * configured AI provider.
      * @throws IllegalStateException if no AI provider is configured.
      */
     public static ChatModel createChatModel(Config config) {
@@ -222,6 +222,7 @@ public class AiProviderFactory {
                                      .build();
 
         DeepSeekChatOptions options = DeepSeekChatOptions.builder()
+                                                         .model("deepseek-chat")
                                                          .temperature(config.temperature())
                                                          .build();
 

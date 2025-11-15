@@ -187,9 +187,9 @@ public class CommitService {
     private void displayMessage(String message) {
         System.out.println();
         System.out.println("AI generated commit message:");
-        System.out.println("—".repeat(60));
+        System.out.println("-".repeat(60));
         System.out.println(message);
-        System.out.println("—".repeat(60));
+        System.out.println("-".repeat(60));
     }
 
     /**
