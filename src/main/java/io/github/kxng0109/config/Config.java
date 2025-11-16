@@ -98,15 +98,15 @@ public record Config(
 
     /**
      * Parses the given string into a double value. If the parsing fails due to a {@code NumberFormatException},
-     * or if the parsed value is not within the range [0.0, 1.0], a default value of {@code 0.1} is returned.
+     * or if the parsed value is not within the range [0.0, 2.0], a default value of {@code 0.1} is returned.
      *
      * @param value the string to be parsed into a double.
-     * @return the parsed double value between 0.0 and 1.0 (inclusive), or 0.1 if the input is invalid or out of range.
+     * @return the parsed double value between 0.0 and 2.0 (inclusive), or 0.1 if the input is invalid or out of range.
      */
     private static double parseDouble(String value) {
         try {
             double parsed = Double.parseDouble(value);
-            return (parsed < 0.0 || parsed > 1.0) ? 0.1 : parsed;
+            return (parsed < 0.0 || parsed > 2.0) ? 0.1 : parsed;
         } catch (NumberFormatException e) {
             return 0.1;
         }

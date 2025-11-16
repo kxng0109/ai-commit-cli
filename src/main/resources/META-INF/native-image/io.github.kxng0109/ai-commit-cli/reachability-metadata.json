@@ -1,0 +1,2649 @@
+{
+  "reflection": [
+    {
+      "type": "byte[]"
+    },
+    {
+      "type": "com.fasterxml.jackson.annotation.JsonProperty",
+      "allDeclaredMethods": true
+    },
+    {
+      "type": "com.fasterxml.jackson.annotation.JsonValue",
+      "allDeclaredMethods": true
+    },
+    {
+      "type": "com.fasterxml.jackson.core.JsonGenerator"
+    },
+    {
+      "type": "com.fasterxml.jackson.databind.ObjectMapper"
+    },
+    {
+      "type": "com.fasterxml.jackson.databind.deser.BeanDeserializerModifier[]"
+    },
+    {
+      "type": "com.fasterxml.jackson.databind.deser.Deserializers[]"
+    },
+    {
+      "type": "com.fasterxml.jackson.databind.deser.KeyDeserializers[]"
+    },
+    {
+      "type": "com.fasterxml.jackson.databind.deser.ValueInstantiators[]"
+    },
+    {
+      "type": "com.fasterxml.jackson.databind.ext.Java7SupportImpl",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "com.fasterxml.jackson.databind.ser.BeanSerializerModifier[]"
+    },
+    {
+      "type": "com.fasterxml.jackson.databind.ser.Serializers[]"
+    },
+    {
+      "type": "com.fasterxml.jackson.dataformat.cbor.CBORFactory"
+    },
+    {
+      "type": "com.fasterxml.jackson.dataformat.smile.SmileFactory"
+    },
+    {
+      "type": "com.fasterxml.jackson.dataformat.xml.XmlMapper"
+    },
+    {
+      "type": "com.fasterxml.jackson.dataformat.yaml.YAMLFactory"
+    },
+    {
+      "type": "com.fasterxml.jackson.datatype.jdk8.Jdk8Module",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "com.fasterxml.jackson.datatype.jsr310.JavaTimeModule",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "com.fasterxml.jackson.module.kotlin.KotlinModule"
+    },
+    {
+      "type": "com.fasterxml.jackson.module.paramnames.ParameterNamesModule"
+    },
+    {
+      "type": "com.google.genai.JsonSerializable"
+    },
+    {
+      "type": "com.google.genai.types.AutoValue_Content",
+      "methods": [
+        {
+          "name": "parts",
+          "parameterTypes": []
+        },
+        {
+          "name": "role",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "com.google.genai.types.AutoValue_GenerateContentConfig",
+      "methods": [
+        {
+          "name": "audioTimestamp",
+          "parameterTypes": []
+        },
+        {
+          "name": "automaticFunctionCalling",
+          "parameterTypes": []
+        },
+        {
+          "name": "cachedContent",
+          "parameterTypes": []
+        },
+        {
+          "name": "candidateCount",
+          "parameterTypes": []
+        },
+        {
+          "name": "frequencyPenalty",
+          "parameterTypes": []
+        },
+        {
+          "name": "httpOptions",
+          "parameterTypes": []
+        },
+        {
+          "name": "labels",
+          "parameterTypes": []
+        },
+        {
+          "name": "logprobs",
+          "parameterTypes": []
+        },
+        {
+          "name": "maxOutputTokens",
+          "parameterTypes": []
+        },
+        {
+          "name": "mediaResolution",
+          "parameterTypes": []
+        },
+        {
+          "name": "modelSelectionConfig",
+          "parameterTypes": []
+        },
+        {
+          "name": "presencePenalty",
+          "parameterTypes": []
+        },
+        {
+          "name": "responseJsonSchema",
+          "parameterTypes": []
+        },
+        {
+          "name": "responseLogprobs",
+          "parameterTypes": []
+        },
+        {
+          "name": "responseMimeType",
+          "parameterTypes": []
+        },
+        {
+          "name": "responseModalities",
+          "parameterTypes": []
+        },
+        {
+          "name": "responseSchema",
+          "parameterTypes": []
+        },
+        {
+          "name": "routingConfig",
+          "parameterTypes": []
+        },
+        {
+          "name": "safetySettings",
+          "parameterTypes": []
+        },
+        {
+          "name": "seed",
+          "parameterTypes": []
+        },
+        {
+          "name": "shouldReturnHttpResponse",
+          "parameterTypes": []
+        },
+        {
+          "name": "speechConfig",
+          "parameterTypes": []
+        },
+        {
+          "name": "stopSequences",
+          "parameterTypes": []
+        },
+        {
+          "name": "systemInstruction",
+          "parameterTypes": []
+        },
+        {
+          "name": "temperature",
+          "parameterTypes": []
+        },
+        {
+          "name": "thinkingConfig",
+          "parameterTypes": []
+        },
+        {
+          "name": "toolConfig",
+          "parameterTypes": []
+        },
+        {
+          "name": "tools",
+          "parameterTypes": []
+        },
+        {
+          "name": "topK",
+          "parameterTypes": []
+        },
+        {
+          "name": "topP",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "com.google.genai.types.AutoValue_GenerateContentParameters",
+      "methods": [
+        {
+          "name": "config",
+          "parameterTypes": []
+        },
+        {
+          "name": "contents",
+          "parameterTypes": []
+        },
+        {
+          "name": "model",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "com.google.genai.types.AutoValue_Part",
+      "methods": [
+        {
+          "name": "codeExecutionResult",
+          "parameterTypes": []
+        },
+        {
+          "name": "executableCode",
+          "parameterTypes": []
+        },
+        {
+          "name": "fileData",
+          "parameterTypes": []
+        },
+        {
+          "name": "functionCall",
+          "parameterTypes": []
+        },
+        {
+          "name": "functionResponse",
+          "parameterTypes": []
+        },
+        {
+          "name": "inlineData",
+          "parameterTypes": []
+        },
+        {
+          "name": "text",
+          "parameterTypes": []
+        },
+        {
+          "name": "thought",
+          "parameterTypes": []
+        },
+        {
+          "name": "thoughtSignature",
+          "parameterTypes": []
+        },
+        {
+          "name": "videoMetadata",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "com.google.genai.types.Blob$Builder"
+    },
+    {
+      "type": "com.google.genai.types.BlockedReason"
+    },
+    {
+      "type": "com.google.genai.types.Candidate$Builder",
+      "methods": [
+        {
+          "name": "avgLogprobs",
+          "parameterTypes": [
+            "java.lang.Double"
+          ]
+        },
+        {
+          "name": "build",
+          "parameterTypes": []
+        },
+        {
+          "name": "content",
+          "parameterTypes": [
+            "com.google.genai.types.Content"
+          ]
+        },
+        {
+          "name": "create",
+          "parameterTypes": []
+        },
+        {
+          "name": "finishReason",
+          "parameterTypes": [
+            "com.google.genai.types.FinishReason"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "com.google.genai.types.Citation$Builder"
+    },
+    {
+      "type": "com.google.genai.types.CitationMetadata$Builder"
+    },
+    {
+      "type": "com.google.genai.types.CodeExecutionResult$Builder"
+    },
+    {
+      "type": "com.google.genai.types.Content"
+    },
+    {
+      "type": "com.google.genai.types.Content$Builder",
+      "methods": [
+        {
+          "name": "build",
+          "parameterTypes": []
+        },
+        {
+          "name": "create",
+          "parameterTypes": []
+        },
+        {
+          "name": "parts",
+          "parameterTypes": [
+            "java.util.List"
+          ]
+        },
+        {
+          "name": "role",
+          "parameterTypes": [
+            "java.lang.String"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "com.google.genai.types.Content[]"
+    },
+    {
+      "type": "com.google.genai.types.ExecutableCode$Builder"
+    },
+    {
+      "type": "com.google.genai.types.FileData$Builder"
+    },
+    {
+      "type": "com.google.genai.types.FinishReason",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "java.lang.String"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "com.google.genai.types.FunctionCall$Builder"
+    },
+    {
+      "type": "com.google.genai.types.FunctionResponse$Builder"
+    },
+    {
+      "type": "com.google.genai.types.FunctionResponseScheduling"
+    },
+    {
+      "type": "com.google.genai.types.GenerateContentConfig"
+    },
+    {
+      "type": "com.google.genai.types.GenerateContentParameters"
+    },
+    {
+      "type": "com.google.genai.types.GenerateContentResponse$Builder",
+      "methods": [
+        {
+          "name": "build",
+          "parameterTypes": []
+        },
+        {
+          "name": "candidates",
+          "parameterTypes": [
+            "java.util.List"
+          ]
+        },
+        {
+          "name": "create",
+          "parameterTypes": []
+        },
+        {
+          "name": "modelVersion",
+          "parameterTypes": [
+            "java.lang.String"
+          ]
+        },
+        {
+          "name": "responseId",
+          "parameterTypes": [
+            "java.lang.String"
+          ]
+        },
+        {
+          "name": "usageMetadata",
+          "parameterTypes": [
+            "com.google.genai.types.GenerateContentResponseUsageMetadata"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "com.google.genai.types.GenerateContentResponsePromptFeedback$Builder"
+    },
+    {
+      "type": "com.google.genai.types.GenerateContentResponseUsageMetadata$Builder",
+      "methods": [
+        {
+          "name": "build",
+          "parameterTypes": []
+        },
+        {
+          "name": "candidatesTokenCount",
+          "parameterTypes": [
+            "java.lang.Integer"
+          ]
+        },
+        {
+          "name": "candidatesTokensDetails",
+          "parameterTypes": [
+            "java.util.List"
+          ]
+        },
+        {
+          "name": "create",
+          "parameterTypes": []
+        },
+        {
+          "name": "promptTokenCount",
+          "parameterTypes": [
+            "java.lang.Integer"
+          ]
+        },
+        {
+          "name": "promptTokensDetails",
+          "parameterTypes": [
+            "java.util.List"
+          ]
+        },
+        {
+          "name": "totalTokenCount",
+          "parameterTypes": [
+            "java.lang.Integer"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "com.google.genai.types.GoogleTypeDate$Builder"
+    },
+    {
+      "type": "com.google.genai.types.GroundingChunk$Builder"
+    },
+    {
+      "type": "com.google.genai.types.GroundingChunkMaps$Builder"
+    },
+    {
+      "type": "com.google.genai.types.GroundingChunkMapsPlaceAnswerSources$Builder"
+    },
+    {
+      "type": "com.google.genai.types.GroundingChunkMapsPlaceAnswerSourcesAuthorAttribution$Builder"
+    },
+    {
+      "type": "com.google.genai.types.GroundingChunkMapsPlaceAnswerSourcesReviewSnippet$Builder"
+    },
+    {
+      "type": "com.google.genai.types.GroundingChunkRetrievedContext$Builder"
+    },
+    {
+      "type": "com.google.genai.types.GroundingChunkWeb$Builder"
+    },
+    {
+      "type": "com.google.genai.types.GroundingMetadata$Builder"
+    },
+    {
+      "type": "com.google.genai.types.GroundingSupport$Builder"
+    },
+    {
+      "type": "com.google.genai.types.HarmBlockThreshold"
+    },
+    {
+      "type": "com.google.genai.types.HarmCategory"
+    },
+    {
+      "type": "com.google.genai.types.HarmProbability"
+    },
+    {
+      "type": "com.google.genai.types.HarmSeverity"
+    },
+    {
+      "type": "com.google.genai.types.HttpResponse$Builder"
+    },
+    {
+      "type": "com.google.genai.types.Language"
+    },
+    {
+      "type": "com.google.genai.types.LogprobsResult$Builder"
+    },
+    {
+      "type": "com.google.genai.types.LogprobsResultCandidate$Builder"
+    },
+    {
+      "type": "com.google.genai.types.LogprobsResultTopCandidates$Builder"
+    },
+    {
+      "type": "com.google.genai.types.MediaModality",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "java.lang.String"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "com.google.genai.types.ModalityTokenCount$Builder",
+      "methods": [
+        {
+          "name": "build",
+          "parameterTypes": []
+        },
+        {
+          "name": "create",
+          "parameterTypes": []
+        },
+        {
+          "name": "modality",
+          "parameterTypes": [
+            "com.google.genai.types.MediaModality"
+          ]
+        },
+        {
+          "name": "tokenCount",
+          "parameterTypes": [
+            "java.lang.Integer"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "com.google.genai.types.Outcome"
+    },
+    {
+      "type": "com.google.genai.types.Part"
+    },
+    {
+      "type": "com.google.genai.types.Part$Builder",
+      "methods": [
+        {
+          "name": "build",
+          "parameterTypes": []
+        },
+        {
+          "name": "create",
+          "parameterTypes": []
+        },
+        {
+          "name": "text",
+          "parameterTypes": [
+            "java.lang.String"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "com.google.genai.types.RagChunk$Builder"
+    },
+    {
+      "type": "com.google.genai.types.RagChunkPageSpan$Builder"
+    },
+    {
+      "type": "com.google.genai.types.RetrievalMetadata$Builder"
+    },
+    {
+      "type": "com.google.genai.types.SafetyRating$Builder"
+    },
+    {
+      "type": "com.google.genai.types.SearchEntryPoint$Builder"
+    },
+    {
+      "type": "com.google.genai.types.Segment$Builder"
+    },
+    {
+      "type": "com.google.genai.types.TrafficType"
+    },
+    {
+      "type": "com.google.genai.types.UrlContextMetadata$Builder"
+    },
+    {
+      "type": "com.google.genai.types.UrlMetadata$Builder"
+    },
+    {
+      "type": "com.google.genai.types.UrlRetrievalStatus"
+    },
+    {
+      "type": "com.google.genai.types.VideoMetadata$Builder"
+    },
+    {
+      "type": "com.google.gson.Gson"
+    },
+    {
+      "type": "com.google.protobuf.Message"
+    },
+    {
+      "type": "com.rometools.rome.feed.WireFeed"
+    },
+    {
+      "type": "com.sun.crypto.provider.AESCipher$General",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "com.sun.crypto.provider.ARCFOURCipher",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "com.sun.crypto.provider.ChaCha20Cipher$ChaCha20Poly1305",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "com.sun.crypto.provider.DESCipher",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "com.sun.crypto.provider.DESedeCipher",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "com.sun.crypto.provider.DHParameters",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "com.sun.crypto.provider.GaloisCounterMode$AESGCM",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "com.sun.crypto.provider.HKDFKeyDerivation$HKDFSHA384",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "javax.crypto.KDFParameters"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "com.sun.crypto.provider.HmacCore$HmacSHA384",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "com.sun.crypto.provider.TlsMasterSecretGenerator",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "io.github.kxng0109.AiCommitCli",
+      "jniAccessible": true,
+      "methods": [
+        {
+          "name": "main",
+          "parameterTypes": [
+            "java.lang.String[]"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "io.netty.buffer.ByteBuf"
+    },
+    {
+      "type": "io.netty5.buffer.Buffer"
+    },
+    {
+      "type": "jakarta.json.bind.Jsonb"
+    },
+    {
+      "type": "jakarta.xml.bind.Binder"
+    },
+    {
+      "type": "java.io.Serializable"
+    },
+    {
+      "type": "java.lang.Boolean",
+      "jniAccessible": true,
+      "methods": [
+        {
+          "name": "getBoolean",
+          "parameterTypes": [
+            "java.lang.String"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "java.lang.Class",
+      "methods": [
+        {
+          "name": "getRecordComponents",
+          "parameterTypes": []
+        },
+        {
+          "name": "isRecord",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "java.lang.Comparable"
+    },
+    {
+      "type": "java.lang.Double"
+    },
+    {
+      "type": "java.lang.Float"
+    },
+    {
+      "type": "java.lang.Iterable"
+    },
+    {
+      "type": "java.lang.Number"
+    },
+    {
+      "type": "java.lang.Object[]"
+    },
+    {
+      "type": "java.lang.Record"
+    },
+    {
+      "type": "java.lang.String[]"
+    },
+    {
+      "type": "java.lang.constant.Constable"
+    },
+    {
+      "type": "java.lang.constant.ConstantDesc"
+    },
+    {
+      "type": "java.lang.reflect.RecordComponent",
+      "methods": [
+        {
+          "name": "getName",
+          "parameterTypes": []
+        },
+        {
+          "name": "getType",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "java.net.http.HttpClient"
+    },
+    {
+      "type": "java.security.AlgorithmParametersSpi"
+    },
+    {
+      "type": "java.security.KeyStoreSpi"
+    },
+    {
+      "type": "java.security.interfaces.ECPrivateKey"
+    },
+    {
+      "type": "java.security.interfaces.ECPublicKey"
+    },
+    {
+      "type": "java.security.interfaces.RSAPrivateKey"
+    },
+    {
+      "type": "java.security.interfaces.RSAPublicKey"
+    },
+    {
+      "type": "java.util.AbstractCollection"
+    },
+    {
+      "type": "java.util.AbstractMap"
+    },
+    {
+      "type": "java.util.Collection"
+    },
+    {
+      "type": "java.util.ImmutableCollections$AbstractImmutableCollection"
+    },
+    {
+      "type": "java.util.ImmutableCollections$AbstractImmutableList"
+    },
+    {
+      "type": "java.util.ImmutableCollections$AbstractImmutableMap"
+    },
+    {
+      "type": "java.util.ImmutableCollections$ListN"
+    },
+    {
+      "type": "java.util.ImmutableCollections$MapN"
+    },
+    {
+      "type": "java.util.List"
+    },
+    {
+      "type": "java.util.Map"
+    },
+    {
+      "type": "java.util.RandomAccess"
+    },
+    {
+      "type": "kotlin.Metadata"
+    },
+    {
+      "type": "kotlin.jvm.JvmInline"
+    },
+    {
+      "type": "kotlin.reflect.full.KClasses"
+    },
+    {
+      "type": "kotlinx.serialization.cbor.Cbor"
+    },
+    {
+      "type": "kotlinx.serialization.json.Json"
+    },
+    {
+      "type": "kotlinx.serialization.protobuf.ProtoBuf"
+    },
+    {
+      "type": "org.apache.hc.client5.http.classic.HttpClient"
+    },
+    {
+      "type": "org.apache.hc.client5.http.impl.async.CloseableHttpAsyncClient"
+    },
+    {
+      "type": "org.apache.logging.log4j.spi.ExtendedLogger"
+    },
+    {
+      "type": "org.apache.logging.slf4j.SLF4JProvider"
+    },
+    {
+      "type": "org.eclipse.jetty.client.HttpClient"
+    },
+    {
+      "type": "org.slf4j.Logger"
+    },
+    {
+      "type": "org.slf4j.simple.SimpleLogger",
+      "allDeclaredMethods": true,
+      "allDeclaredConstructors": true
+    },
+    {
+      "type": "org.slf4j.simple.SimpleLoggerFactory",
+      "allDeclaredMethods": true,
+      "allDeclaredConstructors": true
+    },
+    {
+      "type": "org.slf4j.simple.SimpleServiceProvider",
+      "allDeclaredMethods": true,
+      "allDeclaredConstructors": true,
+      "allPublicConstructors": true
+    },
+    {
+      "type": "org.slf4j.spi.LocationAwareLogger"
+    },
+    {
+      "type": "org.springframework.ai.anthropic.AnthropicChatOptions",
+      "allDeclaredFields": true,
+      "allPublicFields": true,
+      "allDeclaredMethods": true,
+      "allDeclaredConstructors": true
+    },
+    {
+      "type": "org.springframework.ai.anthropic.api.AnthropicApi$AnthropicMessage",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "java.util.List",
+            "org.springframework.ai.anthropic.api.AnthropicApi$Role"
+          ]
+        },
+        {
+          "name": "content",
+          "parameterTypes": []
+        },
+        {
+          "name": "role",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "org.springframework.ai.anthropic.api.AnthropicApi$ChatCompletionRequest",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "java.lang.String",
+            "java.util.List",
+            "java.lang.Object",
+            "java.lang.Integer",
+            "org.springframework.ai.anthropic.api.AnthropicApi$ChatCompletionRequest$Metadata",
+            "java.util.List",
+            "java.lang.Boolean",
+            "java.lang.Double",
+            "java.lang.Double",
+            "java.lang.Integer",
+            "java.util.List",
+            "org.springframework.ai.anthropic.api.AnthropicApi$ToolChoice",
+            "org.springframework.ai.anthropic.api.AnthropicApi$ChatCompletionRequest$ThinkingConfig"
+          ]
+        },
+        {
+          "name": "maxTokens",
+          "parameterTypes": []
+        },
+        {
+          "name": "messages",
+          "parameterTypes": []
+        },
+        {
+          "name": "metadata",
+          "parameterTypes": []
+        },
+        {
+          "name": "model",
+          "parameterTypes": []
+        },
+        {
+          "name": "stopSequences",
+          "parameterTypes": []
+        },
+        {
+          "name": "stream",
+          "parameterTypes": []
+        },
+        {
+          "name": "system",
+          "parameterTypes": []
+        },
+        {
+          "name": "temperature",
+          "parameterTypes": []
+        },
+        {
+          "name": "thinking",
+          "parameterTypes": []
+        },
+        {
+          "name": "toolChoice",
+          "parameterTypes": []
+        },
+        {
+          "name": "tools",
+          "parameterTypes": []
+        },
+        {
+          "name": "topK",
+          "parameterTypes": []
+        },
+        {
+          "name": "topP",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "org.springframework.ai.anthropic.api.AnthropicApi$ChatCompletionRequest$CacheControl"
+    },
+    {
+      "type": "org.springframework.ai.anthropic.api.AnthropicApi$ChatCompletionRequest$Metadata"
+    },
+    {
+      "type": "org.springframework.ai.anthropic.api.AnthropicApi$ChatCompletionRequest$ThinkingConfig"
+    },
+    {
+      "type": "org.springframework.ai.anthropic.api.AnthropicApi$ChatCompletionResponse",
+      "allDeclaredFields": true,
+      "allPublicFields": true,
+      "allDeclaredMethods": true,
+      "allDeclaredConstructors": true
+    },
+    {
+      "type": "org.springframework.ai.anthropic.api.AnthropicApi$ContentBlock",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "org.springframework.ai.anthropic.api.AnthropicApi$ContentBlock$Type",
+            "org.springframework.ai.anthropic.api.AnthropicApi$ContentBlock$Source",
+            "java.lang.String",
+            "java.lang.Integer",
+            "java.lang.String",
+            "java.lang.String",
+            "java.util.Map",
+            "java.lang.String",
+            "java.lang.String",
+            "java.lang.String",
+            "java.lang.String",
+            "java.lang.String",
+            "org.springframework.ai.anthropic.api.AnthropicApi$ChatCompletionRequest$CacheControl",
+            "java.lang.String",
+            "java.lang.String",
+            "java.lang.Object"
+          ]
+        },
+        {
+          "name": "cacheControl",
+          "parameterTypes": []
+        },
+        {
+          "name": "citations",
+          "parameterTypes": []
+        },
+        {
+          "name": "content",
+          "parameterTypes": []
+        },
+        {
+          "name": "context",
+          "parameterTypes": []
+        },
+        {
+          "name": "data",
+          "parameterTypes": []
+        },
+        {
+          "name": "id",
+          "parameterTypes": []
+        },
+        {
+          "name": "index",
+          "parameterTypes": []
+        },
+        {
+          "name": "input",
+          "parameterTypes": []
+        },
+        {
+          "name": "name",
+          "parameterTypes": []
+        },
+        {
+          "name": "signature",
+          "parameterTypes": []
+        },
+        {
+          "name": "source",
+          "parameterTypes": []
+        },
+        {
+          "name": "text",
+          "parameterTypes": []
+        },
+        {
+          "name": "thinking",
+          "parameterTypes": []
+        },
+        {
+          "name": "title",
+          "parameterTypes": []
+        },
+        {
+          "name": "toolUseId",
+          "parameterTypes": []
+        },
+        {
+          "name": "type",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "org.springframework.ai.anthropic.api.AnthropicApi$ContentBlock$Source"
+    },
+    {
+      "type": "org.springframework.ai.anthropic.api.AnthropicApi$ContentBlock$Type"
+    },
+    {
+      "type": "org.springframework.ai.anthropic.api.AnthropicApi$Message",
+      "allDeclaredFields": true,
+      "allPublicFields": true,
+      "allDeclaredMethods": true,
+      "allDeclaredConstructors": true
+    },
+    {
+      "type": "org.springframework.ai.anthropic.api.AnthropicApi$Role",
+      "allDeclaredFields": true,
+      "allPublicFields": true,
+      "allDeclaredMethods": true
+    },
+    {
+      "type": "org.springframework.ai.anthropic.api.AnthropicApi$ThinkingType"
+    },
+    {
+      "type": "org.springframework.ai.anthropic.api.AnthropicApi$Tool"
+    },
+    {
+      "type": "org.springframework.ai.anthropic.api.AnthropicApi$ToolChoice"
+    },
+    {
+      "type": "org.springframework.ai.azure.openai.AzureOpenAiChatOptions",
+      "allDeclaredFields": true,
+      "allPublicFields": true,
+      "allDeclaredMethods": true,
+      "allDeclaredConstructors": true
+    },
+    {
+      "type": "org.springframework.ai.chat.messages.MessageType",
+      "allDeclaredFields": true,
+      "allPublicFields": true,
+      "allDeclaredMethods": true
+    },
+    {
+      "type": "org.springframework.ai.chat.prompt.ChatOptions"
+    },
+    {
+      "type": "org.springframework.ai.deepseek.DeepSeekChatOptions",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        },
+        {
+          "name": "getFrequencyPenalty",
+          "parameterTypes": []
+        },
+        {
+          "name": "getLogprobs",
+          "parameterTypes": []
+        },
+        {
+          "name": "getMaxTokens",
+          "parameterTypes": []
+        },
+        {
+          "name": "getModel",
+          "parameterTypes": []
+        },
+        {
+          "name": "getPresencePenalty",
+          "parameterTypes": []
+        },
+        {
+          "name": "getResponseFormat",
+          "parameterTypes": []
+        },
+        {
+          "name": "getStop",
+          "parameterTypes": []
+        },
+        {
+          "name": "getTemperature",
+          "parameterTypes": []
+        },
+        {
+          "name": "getToolChoice",
+          "parameterTypes": []
+        },
+        {
+          "name": "getTools",
+          "parameterTypes": []
+        },
+        {
+          "name": "getTopLogprobs",
+          "parameterTypes": []
+        },
+        {
+          "name": "getTopP",
+          "parameterTypes": []
+        },
+        {
+          "name": "setModel",
+          "parameterTypes": [
+            "java.lang.String"
+          ]
+        },
+        {
+          "name": "setTemperature",
+          "parameterTypes": [
+            "java.lang.Double"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "org.springframework.ai.deepseek.api.DeepSeekApi$ChatCompletionMessage",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "java.lang.Object",
+            "org.springframework.ai.deepseek.api.DeepSeekApi$ChatCompletionMessage$Role",
+            "java.lang.String",
+            "java.lang.String",
+            "java.util.List",
+            "java.lang.Boolean",
+            "java.lang.String"
+          ]
+        },
+        {
+          "name": "name",
+          "parameterTypes": []
+        },
+        {
+          "name": "prefix",
+          "parameterTypes": []
+        },
+        {
+          "name": "rawContent",
+          "parameterTypes": []
+        },
+        {
+          "name": "reasoningContent",
+          "parameterTypes": []
+        },
+        {
+          "name": "role",
+          "parameterTypes": []
+        },
+        {
+          "name": "toolCallId",
+          "parameterTypes": []
+        },
+        {
+          "name": "toolCalls",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "org.springframework.ai.deepseek.api.DeepSeekApi$ChatCompletionMessage$ChatCompletionFunction"
+    },
+    {
+      "type": "org.springframework.ai.deepseek.api.DeepSeekApi$ChatCompletionMessage$Role"
+    },
+    {
+      "type": "org.springframework.ai.deepseek.api.DeepSeekApi$ChatCompletionMessage$ToolCall"
+    },
+    {
+      "type": "org.springframework.ai.deepseek.api.DeepSeekApi$ChatCompletionMessage[]"
+    },
+    {
+      "type": "org.springframework.ai.deepseek.api.DeepSeekApi$ChatCompletionRequest",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "java.util.List",
+            "java.lang.String",
+            "java.lang.Double",
+            "java.lang.Integer",
+            "java.lang.Double",
+            "org.springframework.ai.deepseek.api.ResponseFormat",
+            "java.util.List",
+            "java.lang.Boolean",
+            "java.lang.Double",
+            "java.lang.Double",
+            "java.lang.Boolean",
+            "java.lang.Integer",
+            "java.util.List",
+            "java.lang.Object"
+          ]
+        },
+        {
+          "name": "frequencyPenalty",
+          "parameterTypes": []
+        },
+        {
+          "name": "logprobs",
+          "parameterTypes": []
+        },
+        {
+          "name": "maxTokens",
+          "parameterTypes": []
+        },
+        {
+          "name": "messages",
+          "parameterTypes": []
+        },
+        {
+          "name": "model",
+          "parameterTypes": []
+        },
+        {
+          "name": "presencePenalty",
+          "parameterTypes": []
+        },
+        {
+          "name": "responseFormat",
+          "parameterTypes": []
+        },
+        {
+          "name": "stop",
+          "parameterTypes": []
+        },
+        {
+          "name": "stream",
+          "parameterTypes": []
+        },
+        {
+          "name": "temperature",
+          "parameterTypes": []
+        },
+        {
+          "name": "toolChoice",
+          "parameterTypes": []
+        },
+        {
+          "name": "tools",
+          "parameterTypes": []
+        },
+        {
+          "name": "topLogprobs",
+          "parameterTypes": []
+        },
+        {
+          "name": "topP",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "org.springframework.ai.deepseek.api.DeepSeekApi$FunctionTool"
+    },
+    {
+      "type": "org.springframework.ai.deepseek.api.DeepSeekApi$FunctionTool$Function"
+    },
+    {
+      "type": "org.springframework.ai.deepseek.api.DeepSeekApi$FunctionTool$Type"
+    },
+    {
+      "type": "org.springframework.ai.deepseek.api.ResponseFormat"
+    },
+    {
+      "type": "org.springframework.ai.deepseek.api.ResponseFormat$Type"
+    },
+    {
+      "type": "org.springframework.ai.google.genai.GoogleGenAiChatOptions",
+      "allDeclaredFields": true,
+      "allPublicFields": true,
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        },
+        {
+          "name": "getAutoCacheThreshold",
+          "parameterTypes": []
+        },
+        {
+          "name": "getCachedContentName",
+          "parameterTypes": []
+        },
+        {
+          "name": "getCandidateCount",
+          "parameterTypes": []
+        },
+        {
+          "name": "getFrequencyPenalty",
+          "parameterTypes": []
+        },
+        {
+          "name": "getIncludeExtendedUsageMetadata",
+          "parameterTypes": []
+        },
+        {
+          "name": "getMaxOutputTokens",
+          "parameterTypes": []
+        },
+        {
+          "name": "getModel",
+          "parameterTypes": []
+        },
+        {
+          "name": "getPresencePenalty",
+          "parameterTypes": []
+        },
+        {
+          "name": "getResponseMimeType",
+          "parameterTypes": []
+        },
+        {
+          "name": "getStopSequences",
+          "parameterTypes": []
+        },
+        {
+          "name": "getTemperature",
+          "parameterTypes": []
+        },
+        {
+          "name": "getThinkingBudget",
+          "parameterTypes": []
+        },
+        {
+          "name": "getTopK",
+          "parameterTypes": []
+        },
+        {
+          "name": "getTopP",
+          "parameterTypes": []
+        },
+        {
+          "name": "getUseCachedContent",
+          "parameterTypes": []
+        },
+        {
+          "name": "setModel",
+          "parameterTypes": [
+            "java.lang.String"
+          ]
+        },
+        {
+          "name": "setTemperature",
+          "parameterTypes": [
+            "java.lang.Double"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "org.springframework.ai.google.genai.api.GoogleGenAiApi$Candidate",
+      "allDeclaredFields": true,
+      "allPublicFields": true,
+      "allDeclaredMethods": true,
+      "allDeclaredConstructors": true
+    },
+    {
+      "type": "org.springframework.ai.google.genai.api.GoogleGenAiApi$Content",
+      "allDeclaredFields": true,
+      "allPublicFields": true,
+      "allDeclaredMethods": true,
+      "allDeclaredConstructors": true
+    },
+    {
+      "type": "org.springframework.ai.google.genai.api.GoogleGenAiApi$GenerateContentRequest",
+      "allDeclaredFields": true,
+      "allPublicFields": true,
+      "allDeclaredMethods": true,
+      "allDeclaredConstructors": true
+    },
+    {
+      "type": "org.springframework.ai.google.genai.api.GoogleGenAiApi$GenerateContentResponse",
+      "allDeclaredFields": true,
+      "allPublicFields": true,
+      "allDeclaredMethods": true,
+      "allDeclaredConstructors": true
+    },
+    {
+      "type": "org.springframework.ai.google.genai.api.GoogleGenAiApi$Part",
+      "allDeclaredFields": true,
+      "allPublicFields": true,
+      "allDeclaredMethods": true,
+      "allDeclaredConstructors": true
+    },
+    {
+      "type": "org.springframework.ai.model.ModelOptions"
+    },
+    {
+      "type": "org.springframework.ai.model.tool.ToolCallingChatOptions"
+    },
+    {
+      "type": "org.springframework.ai.ollama.api.OllamaApi$ChatRequest",
+      "methods": [
+        {
+          "name": "format",
+          "parameterTypes": []
+        },
+        {
+          "name": "keepAlive",
+          "parameterTypes": []
+        },
+        {
+          "name": "messages",
+          "parameterTypes": []
+        },
+        {
+          "name": "model",
+          "parameterTypes": []
+        },
+        {
+          "name": "options",
+          "parameterTypes": []
+        },
+        {
+          "name": "stream",
+          "parameterTypes": []
+        },
+        {
+          "name": "think",
+          "parameterTypes": []
+        },
+        {
+          "name": "tools",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "org.springframework.ai.ollama.api.OllamaApi$ChatRequest$Tool"
+    },
+    {
+      "type": "org.springframework.ai.ollama.api.OllamaApi$ChatRequest$Tool$Function"
+    },
+    {
+      "type": "org.springframework.ai.ollama.api.OllamaApi$ChatRequest$Tool$Type"
+    },
+    {
+      "type": "org.springframework.ai.ollama.api.OllamaApi$ChatRequest$Tool[]"
+    },
+    {
+      "type": "org.springframework.ai.ollama.api.OllamaApi$ChatResponse",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "java.lang.String",
+            "java.time.Instant",
+            "org.springframework.ai.ollama.api.OllamaApi$Message",
+            "java.lang.String",
+            "java.lang.Boolean",
+            "java.lang.Long",
+            "java.lang.Long",
+            "java.lang.Integer",
+            "java.lang.Long",
+            "java.lang.Integer",
+            "java.lang.Long"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "org.springframework.ai.ollama.api.OllamaApi$Message",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "org.springframework.ai.ollama.api.OllamaApi$Message$Role",
+            "java.lang.String",
+            "java.util.List",
+            "java.util.List",
+            "java.lang.String",
+            "java.lang.String"
+          ]
+        },
+        {
+          "name": "content",
+          "parameterTypes": []
+        },
+        {
+          "name": "images",
+          "parameterTypes": []
+        },
+        {
+          "name": "role",
+          "parameterTypes": []
+        },
+        {
+          "name": "thinking",
+          "parameterTypes": []
+        },
+        {
+          "name": "toolCalls",
+          "parameterTypes": []
+        },
+        {
+          "name": "toolName",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "org.springframework.ai.ollama.api.OllamaApi$Message$Role",
+      "allDeclaredFields": true,
+      "allPublicFields": true,
+      "allDeclaredMethods": true
+    },
+    {
+      "type": "org.springframework.ai.ollama.api.OllamaApi$Message$ToolCall"
+    },
+    {
+      "type": "org.springframework.ai.ollama.api.OllamaApi$Message$ToolCallFunction"
+    },
+    {
+      "type": "org.springframework.ai.ollama.api.OllamaApi$Message[]"
+    },
+    {
+      "type": "org.springframework.ai.ollama.api.OllamaChatOptions",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        },
+        {
+          "name": "getF16KV",
+          "parameterTypes": []
+        },
+        {
+          "name": "getFormat",
+          "parameterTypes": []
+        },
+        {
+          "name": "getFrequencyPenalty",
+          "parameterTypes": []
+        },
+        {
+          "name": "getKeepAlive",
+          "parameterTypes": []
+        },
+        {
+          "name": "getLogitsAll",
+          "parameterTypes": []
+        },
+        {
+          "name": "getLowVRAM",
+          "parameterTypes": []
+        },
+        {
+          "name": "getMainGPU",
+          "parameterTypes": []
+        },
+        {
+          "name": "getMinP",
+          "parameterTypes": []
+        },
+        {
+          "name": "getMirostat",
+          "parameterTypes": []
+        },
+        {
+          "name": "getMirostatEta",
+          "parameterTypes": []
+        },
+        {
+          "name": "getMirostatTau",
+          "parameterTypes": []
+        },
+        {
+          "name": "getModel",
+          "parameterTypes": []
+        },
+        {
+          "name": "getNumBatch",
+          "parameterTypes": []
+        },
+        {
+          "name": "getNumCtx",
+          "parameterTypes": []
+        },
+        {
+          "name": "getNumGPU",
+          "parameterTypes": []
+        },
+        {
+          "name": "getNumKeep",
+          "parameterTypes": []
+        },
+        {
+          "name": "getNumPredict",
+          "parameterTypes": []
+        },
+        {
+          "name": "getNumThread",
+          "parameterTypes": []
+        },
+        {
+          "name": "getPenalizeNewline",
+          "parameterTypes": []
+        },
+        {
+          "name": "getPresencePenalty",
+          "parameterTypes": []
+        },
+        {
+          "name": "getRepeatLastN",
+          "parameterTypes": []
+        },
+        {
+          "name": "getRepeatPenalty",
+          "parameterTypes": []
+        },
+        {
+          "name": "getSeed",
+          "parameterTypes": []
+        },
+        {
+          "name": "getStop",
+          "parameterTypes": []
+        },
+        {
+          "name": "getTemperature",
+          "parameterTypes": []
+        },
+        {
+          "name": "getTfsZ",
+          "parameterTypes": []
+        },
+        {
+          "name": "getThinkOption",
+          "parameterTypes": []
+        },
+        {
+          "name": "getTopK",
+          "parameterTypes": []
+        },
+        {
+          "name": "getTopP",
+          "parameterTypes": []
+        },
+        {
+          "name": "getTruncate",
+          "parameterTypes": []
+        },
+        {
+          "name": "getTypicalP",
+          "parameterTypes": []
+        },
+        {
+          "name": "getUseMLock",
+          "parameterTypes": []
+        },
+        {
+          "name": "getUseMMap",
+          "parameterTypes": []
+        },
+        {
+          "name": "getUseNUMA",
+          "parameterTypes": []
+        },
+        {
+          "name": "getVocabOnly",
+          "parameterTypes": []
+        },
+        {
+          "name": "setModel",
+          "parameterTypes": [
+            "java.lang.String"
+          ]
+        },
+        {
+          "name": "setTemperature",
+          "parameterTypes": [
+            "java.lang.Double"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "org.springframework.ai.ollama.api.ThinkOption$ThinkOptionDeserializer",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "org.springframework.ai.openai.OpenAiChatOptions",
+      "allDeclaredFields": true,
+      "allPublicFields": true,
+      "allDeclaredMethods": true,
+      "allDeclaredConstructors": true
+    },
+    {
+      "type": "org.springframework.ai.openai.api.OpenAiApi$ChatCompletion",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "java.lang.String",
+            "java.util.List",
+            "java.lang.Long",
+            "java.lang.String",
+            "java.lang.String",
+            "java.lang.String",
+            "java.lang.String",
+            "org.springframework.ai.openai.api.OpenAiApi$Usage"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "org.springframework.ai.openai.api.OpenAiApi$ChatCompletion$Choice",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "org.springframework.ai.openai.api.OpenAiApi$ChatCompletionFinishReason",
+            "java.lang.Integer",
+            "org.springframework.ai.openai.api.OpenAiApi$ChatCompletionMessage",
+            "org.springframework.ai.openai.api.OpenAiApi$LogProbs"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "org.springframework.ai.openai.api.OpenAiApi$ChatCompletionFinishReason"
+    },
+    {
+      "type": "org.springframework.ai.openai.api.OpenAiApi$ChatCompletionMessage",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "java.lang.Object",
+            "org.springframework.ai.openai.api.OpenAiApi$ChatCompletionMessage$Role",
+            "java.lang.String",
+            "java.lang.String",
+            "java.util.List",
+            "java.lang.String",
+            "org.springframework.ai.openai.api.OpenAiApi$ChatCompletionMessage$AudioOutput",
+            "java.util.List",
+            "java.lang.String"
+          ]
+        },
+        {
+          "name": "annotations",
+          "parameterTypes": []
+        },
+        {
+          "name": "audioOutput",
+          "parameterTypes": []
+        },
+        {
+          "name": "name",
+          "parameterTypes": []
+        },
+        {
+          "name": "rawContent",
+          "parameterTypes": []
+        },
+        {
+          "name": "reasoningContent",
+          "parameterTypes": []
+        },
+        {
+          "name": "refusal",
+          "parameterTypes": []
+        },
+        {
+          "name": "role",
+          "parameterTypes": []
+        },
+        {
+          "name": "toolCallId",
+          "parameterTypes": []
+        },
+        {
+          "name": "toolCalls",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "org.springframework.ai.openai.api.OpenAiApi$ChatCompletionMessage$Annotation"
+    },
+    {
+      "type": "org.springframework.ai.openai.api.OpenAiApi$ChatCompletionMessage$Annotation$UrlCitation"
+    },
+    {
+      "type": "org.springframework.ai.openai.api.OpenAiApi$ChatCompletionMessage$AudioOutput"
+    },
+    {
+      "type": "org.springframework.ai.openai.api.OpenAiApi$ChatCompletionMessage$ChatCompletionFunction"
+    },
+    {
+      "type": "org.springframework.ai.openai.api.OpenAiApi$ChatCompletionMessage$Role",
+      "allDeclaredFields": true,
+      "allPublicFields": true,
+      "allDeclaredMethods": true
+    },
+    {
+      "type": "org.springframework.ai.openai.api.OpenAiApi$ChatCompletionMessage$ToolCall"
+    },
+    {
+      "type": "org.springframework.ai.openai.api.OpenAiApi$ChatCompletionMessage[]"
+    },
+    {
+      "type": "org.springframework.ai.openai.api.OpenAiApi$ChatCompletionRequest",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "java.util.List",
+            "java.lang.String",
+            "java.lang.Boolean",
+            "java.util.Map",
+            "java.lang.Double",
+            "java.util.Map",
+            "java.lang.Boolean",
+            "java.lang.Integer",
+            "java.lang.Integer",
+            "java.lang.Integer",
+            "java.lang.Integer",
+            "java.util.List",
+            "org.springframework.ai.openai.api.OpenAiApi$ChatCompletionRequest$AudioParameters",
+            "java.lang.Double",
+            "org.springframework.ai.openai.api.ResponseFormat",
+            "java.lang.Integer",
+            "java.lang.String",
+            "java.util.List",
+            "java.lang.Boolean",
+            "org.springframework.ai.openai.api.OpenAiApi$ChatCompletionRequest$StreamOptions",
+            "java.lang.Double",
+            "java.lang.Double",
+            "java.util.List",
+            "java.lang.Object",
+            "java.lang.Boolean",
+            "java.lang.String",
+            "java.lang.String",
+            "org.springframework.ai.openai.api.OpenAiApi$ChatCompletionRequest$WebSearchOptions",
+            "java.lang.String",
+            "java.lang.String",
+            "java.lang.String",
+            "java.util.Map"
+          ]
+        },
+        {
+          "name": "audioParameters",
+          "parameterTypes": []
+        },
+        {
+          "name": "extraBody",
+          "parameterTypes": []
+        },
+        {
+          "name": "frequencyPenalty",
+          "parameterTypes": []
+        },
+        {
+          "name": "logitBias",
+          "parameterTypes": []
+        },
+        {
+          "name": "logprobs",
+          "parameterTypes": []
+        },
+        {
+          "name": "maxCompletionTokens",
+          "parameterTypes": []
+        },
+        {
+          "name": "maxTokens",
+          "parameterTypes": []
+        },
+        {
+          "name": "messages",
+          "parameterTypes": []
+        },
+        {
+          "name": "metadata",
+          "parameterTypes": []
+        },
+        {
+          "name": "model",
+          "parameterTypes": []
+        },
+        {
+          "name": "n",
+          "parameterTypes": []
+        },
+        {
+          "name": "outputModalities",
+          "parameterTypes": []
+        },
+        {
+          "name": "parallelToolCalls",
+          "parameterTypes": []
+        },
+        {
+          "name": "presencePenalty",
+          "parameterTypes": []
+        },
+        {
+          "name": "promptCacheKey",
+          "parameterTypes": []
+        },
+        {
+          "name": "reasoningEffort",
+          "parameterTypes": []
+        },
+        {
+          "name": "responseFormat",
+          "parameterTypes": []
+        },
+        {
+          "name": "safetyIdentifier",
+          "parameterTypes": []
+        },
+        {
+          "name": "seed",
+          "parameterTypes": []
+        },
+        {
+          "name": "serviceTier",
+          "parameterTypes": []
+        },
+        {
+          "name": "stop",
+          "parameterTypes": []
+        },
+        {
+          "name": "store",
+          "parameterTypes": []
+        },
+        {
+          "name": "stream",
+          "parameterTypes": []
+        },
+        {
+          "name": "streamOptions",
+          "parameterTypes": []
+        },
+        {
+          "name": "temperature",
+          "parameterTypes": []
+        },
+        {
+          "name": "toolChoice",
+          "parameterTypes": []
+        },
+        {
+          "name": "tools",
+          "parameterTypes": []
+        },
+        {
+          "name": "topLogprobs",
+          "parameterTypes": []
+        },
+        {
+          "name": "topP",
+          "parameterTypes": []
+        },
+        {
+          "name": "user",
+          "parameterTypes": []
+        },
+        {
+          "name": "verbosity",
+          "parameterTypes": []
+        },
+        {
+          "name": "webSearchOptions",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "org.springframework.ai.openai.api.OpenAiApi$ChatCompletionRequest$AudioParameters"
+    },
+    {
+      "type": "org.springframework.ai.openai.api.OpenAiApi$ChatCompletionRequest$AudioParameters$AudioResponseFormat"
+    },
+    {
+      "type": "org.springframework.ai.openai.api.OpenAiApi$ChatCompletionRequest$AudioParameters$Voice"
+    },
+    {
+      "type": "org.springframework.ai.openai.api.OpenAiApi$ChatCompletionRequest$StreamOptions"
+    },
+    {
+      "type": "org.springframework.ai.openai.api.OpenAiApi$ChatCompletionRequest$WebSearchOptions"
+    },
+    {
+      "type": "org.springframework.ai.openai.api.OpenAiApi$ChatCompletionRequest$WebSearchOptions$SearchContextSize"
+    },
+    {
+      "type": "org.springframework.ai.openai.api.OpenAiApi$ChatCompletionRequest$WebSearchOptions$UserLocation"
+    },
+    {
+      "type": "org.springframework.ai.openai.api.OpenAiApi$ChatCompletionRequest$WebSearchOptions$UserLocation$Approximate"
+    },
+    {
+      "type": "org.springframework.ai.openai.api.OpenAiApi$FunctionTool"
+    },
+    {
+      "type": "org.springframework.ai.openai.api.OpenAiApi$FunctionTool$Function"
+    },
+    {
+      "type": "org.springframework.ai.openai.api.OpenAiApi$FunctionTool$Type"
+    },
+    {
+      "type": "org.springframework.ai.openai.api.OpenAiApi$LogProbs"
+    },
+    {
+      "type": "org.springframework.ai.openai.api.OpenAiApi$LogProbs$Content"
+    },
+    {
+      "type": "org.springframework.ai.openai.api.OpenAiApi$LogProbs$Content$TopLogProbs"
+    },
+    {
+      "type": "org.springframework.ai.openai.api.OpenAiApi$OutputModality"
+    },
+    {
+      "type": "org.springframework.ai.openai.api.OpenAiApi$Usage",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "java.lang.Integer",
+            "java.lang.Integer",
+            "java.lang.Integer",
+            "org.springframework.ai.openai.api.OpenAiApi$Usage$PromptTokensDetails",
+            "org.springframework.ai.openai.api.OpenAiApi$Usage$CompletionTokenDetails"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "org.springframework.ai.openai.api.OpenAiApi$Usage$CompletionTokenDetails",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "java.lang.Integer",
+            "java.lang.Integer",
+            "java.lang.Integer",
+            "java.lang.Integer"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "org.springframework.ai.openai.api.OpenAiApi$Usage$PromptTokensDetails",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "java.lang.Integer",
+            "java.lang.Integer"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "org.springframework.ai.openai.api.ResponseFormat"
+    },
+    {
+      "type": "org.springframework.ai.openai.api.ResponseFormat$JsonSchema"
+    },
+    {
+      "type": "org.springframework.ai.openai.api.ResponseFormat$Type"
+    },
+    {
+      "type": "org.springframework.http.codec.ClientCodecConfigurer"
+    },
+    {
+      "type": "org.springframework.http.codec.ServerCodecConfigurer"
+    },
+    {
+      "type": "org.springframework.http.codec.support.DefaultClientCodecConfigurer",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "org.springframework.http.codec.support.DefaultServerCodecConfigurer"
+    },
+    {
+      "type": "org.springframework.util.ConcurrentReferenceHashMap$Segment[]"
+    },
+    {
+      "type": "reactor.core.publisher.MonoCacheTime"
+    },
+    {
+      "type": "reactor.netty.http.client.HttpClient"
+    },
+    {
+      "type": "reactor.netty5.http.client.HttpClient"
+    },
+    {
+      "type": "sun.launcher.LauncherHelper",
+      "jniAccessible": true,
+      "fields": [
+        {
+          "name": "isStaticMain"
+        },
+        {
+          "name": "noArgMain"
+        }
+      ],
+      "methods": [
+        {
+          "name": "getApplicationClass",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "sun.security.pkcs12.PKCS12KeyStore",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "sun.security.pkcs12.PKCS12KeyStore$DualFormatPKCS12",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "sun.security.provider.DRBG",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "java.security.SecureRandomParameters"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "sun.security.provider.DSA$SHA224withDSA",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "sun.security.provider.DSA$SHA256withDSA",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "sun.security.provider.JavaKeyStore$DualFormatJKS",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "sun.security.provider.JavaKeyStore$JKS",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "sun.security.provider.SHA",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "sun.security.provider.SHA2$SHA224",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "sun.security.provider.SHA2$SHA256",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "sun.security.provider.SHA5$SHA384",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "sun.security.provider.SHA5$SHA512",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "sun.security.provider.X509Factory",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "sun.security.provider.certpath.PKIXCertPathValidator",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "sun.security.rsa.PSSParameters",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "sun.security.rsa.RSAKeyFactory$Legacy",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "sun.security.rsa.RSAPSSSignature",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "sun.security.rsa.RSASignature$SHA224withRSA",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "sun.security.rsa.RSASignature$SHA256withRSA",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "sun.security.ssl.KeyManagerFactoryImpl$SunX509",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "sun.security.ssl.SSLContextImpl$DefaultSSLContext",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "sun.security.ssl.SSLContextImpl$TLSContext",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "sun.security.ssl.TrustManagerFactoryImpl$PKIXFactory",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "sun.security.x509.AuthorityInfoAccessExtension",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "java.lang.Boolean",
+            "java.lang.Object"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "sun.security.x509.AuthorityKeyIdentifierExtension",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "java.lang.Boolean",
+            "java.lang.Object"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "sun.security.x509.BasicConstraintsExtension",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "java.lang.Boolean",
+            "java.lang.Object"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "sun.security.x509.CRLDistributionPointsExtension",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "java.lang.Boolean",
+            "java.lang.Object"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "sun.security.x509.CertificatePoliciesExtension",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "java.lang.Boolean",
+            "java.lang.Object"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "sun.security.x509.ExtendedKeyUsageExtension",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "java.lang.Boolean",
+            "java.lang.Object"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "sun.security.x509.KeyUsageExtension",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "java.lang.Boolean",
+            "java.lang.Object"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "sun.security.x509.NetscapeCertTypeExtension",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "java.lang.Boolean",
+            "java.lang.Object"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "sun.security.x509.PrivateKeyUsageExtension",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "java.lang.Boolean",
+            "java.lang.Object"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "sun.security.x509.SubjectAlternativeNameExtension",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "java.lang.Boolean",
+            "java.lang.Object"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "sun.security.x509.SubjectKeyIdentifierExtension",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "java.lang.Boolean",
+            "java.lang.Object"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "sun.text.resources.cldr.FormatData"
+    },
+    {
+      "type": "sun.text.resources.cldr.FormatData_en"
+    },
+    {
+      "type": "sun.text.resources.cldr.FormatData_en_US"
+    },
+    {
+      "type": "sun.util.resources.cldr.CalendarData"
+    }
+  ],
+  "resources": [
+    {
+      "glob": "META-INF/services/java.net.spi.InetAddressResolverProvider"
+    },
+    {
+      "glob": "META-INF/services/java.net.spi.URLStreamHandlerProvider"
+    },
+    {
+      "glob": "META-INF/services/java.nio.channels.spi.SelectorProvider"
+    },
+    {
+      "glob": "META-INF/services/org.slf4j.spi.SLF4JServiceProvider"
+    },
+    {
+      "glob": "org/springframework/http/codec/CodecConfigurer.properties"
+    },
+    {
+      "glob": "simplelogger.properties"
+    },
+    {
+      "glob": "version.properties"
+    },
+    {
+      "module": "java.base",
+      "glob": "jdk/internal/icu/impl/data/icudt76b/nfkc.nrm"
+    },
+    {
+      "module": "java.base",
+      "glob": "jdk/internal/icu/impl/data/icudt76b/uprops.icu"
+    },
+    {
+      "module": "java.base",
+      "glob": "sun/net/idn/uidna.spp"
+    }
+  ]
+}

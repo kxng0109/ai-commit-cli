@@ -16,10 +16,19 @@
 
         <main.class>io.github.kxng0109.AiCommitCli</main.class>
         <spring.ai.version>1.1.0</spring.ai.version>
+        <jackson.version>2.20.1</jackson.version>
     </properties>
 
     <dependencyManagement>
         <dependencies>
+            <dependency>
+                <groupId>com.fasterxml.jackson</groupId>
+                <artifactId>jackson-bom</artifactId>
+                <version>${jackson.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
             <dependency>
                 <groupId>org.springframework.ai</groupId>
                 <artifactId>spring-ai-bom</artifactId>
@@ -142,6 +151,8 @@
                     <imageName>ai-commit</imageName>
                     <mainClass>${main.class}</mainClass>
                     <buildArgs>
+                        <buildArg>-H:+UnlockExperimentalVMOptions</buildArg>
+                        <buildArg>-H:+RemoveUnusedSymbols</buildArg>
                         <buildArg>--no-fallback</buildArg>
                         <buildArg>--enable-url-protocols=https,http</buildArg>
                         <buildArg>--enable-https</buildArg>
