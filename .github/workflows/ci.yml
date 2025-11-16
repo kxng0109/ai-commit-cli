@@ -33,6 +33,9 @@ jobs:
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-maven-
 
+      - name: Run Tests
+        run: mvn test
+
       - name: Build JAR
         run: mvn clean package -DskipTests
 

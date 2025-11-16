@@ -155,13 +155,17 @@ public class CommitService {
                                       .getOutput()
                                       .getText();
 
-            if (message == null || message.isBlank()) {
+            if (message == null || message.isBlank() || message.trim().isEmpty()) {
                 throw new IllegalStateException("AI returned an empty commit message");
             }
 
             return message.trim();
         } catch (Exception e) {
             log.error("Failed to generate a commit message: {}", e.getMessage(), e);
+
+            if(e instanceof IllegalStateException) {
+                throw new IllegalStateException("AI returned an empty commit message");
+            }
 
             Throwable cause = e.getCause();
             while (cause != null) {
