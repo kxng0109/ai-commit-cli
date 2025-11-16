@@ -38,3 +38,22 @@ build/
 
 ### Mac OS ###
 .DS_Store
+
+# Build artifacts
+*.exe
+*.so
+*.dylib
+ai-commit
+ai-commit-*-amd64*
+
+# Logs
+*.log
+
+# Environment
+.env
+.env.local
+*.env
+
+# GraalVM
+graal_isolate.h
+graal_isolate_dynamic.h
