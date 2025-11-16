@@ -1,0 +1,140 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build ${{ matrix.platform }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            platform: linux-amd64
+            artifact: ai-commit
+          - os: windows-latest
+            platform: windows-amd64
+            artifact: ai-commit.exe
+          - os: macos-latest
+            platform: macos-amd64
+            artifact: ai-commit
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup GraalVM
+        uses: graalvm/setup-graalvm@v1
+        with:
+          java-version: '25'
+          distribution: 'graalvm'
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          native-image-job-reports: 'true'
+
+      - name: Cache Maven
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-maven-
+
+      - name: Build Native Binary
+        run: mvn clean package -Pnative -DskipTests
+
+      - name: Rename Artifact (Unix)
+        if: runner.os != 'Windows'
+        run: |
+          mv target/${{ matrix.artifact }} ai-commit-${{ matrix.platform }}
+          chmod +x ai-commit-${{ matrix.platform }}
+
+      - name: Rename Artifact (Windows)
+        if: runner.os == 'Windows'
+        run: Move-Item target/${{ matrix.artifact }} ai-commit-${{ matrix.platform }}.exe
+
+      - name: Generate SHA256 (Unix)
+        if: runner.os != 'Windows'
+        run: sha256sum ai-commit-${{ matrix.platform }} > ai-commit-${{ matrix.platform }}.sha256
+
+      - name: Generate SHA256 (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          $hash = Get-FileHash ai-commit-${{ matrix.platform }}.exe -Algorithm SHA256
+          "$($hash.Hash.ToLower())  ai-commit-${{ matrix.platform }}.exe" | Out-File -Encoding ASCII ai-commit-${{ matrix.platform }}.exe.sha256
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ai-commit-${{ matrix.platform }}
+          path: |
+            ai-commit-${{ matrix.platform }}*
+          if-no-files-found: error
+
+  release:
+    name: Create Release
+    needs: build
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Display Structure
+        run: ls -R artifacts
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            artifacts/**/*
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+          body: |
+            ## Installation
+
+            **Linux:**
+            ```bash
+            curl -L https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/ai-commit-linux-amd64 -o ai-commit
+            chmod +x ai-commit
+            sudo mv ai-commit /usr/local/bin/
+            ```
+
+            **macOS:**
+            ```bash
+            curl -L https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/ai-commit-macos-amd64 -o ai-commit
+            chmod +x ai-commit
+            sudo mv ai-commit /usr/local/bin/
+            ```
+
+            **Windows:**
+            Download `ai-commit-windows-amd64.exe` and add to PATH.
+
+            ## Verification
+            Verify SHA256 checksums:
+            ```bash
+            sha256sum -c ai-commit-*.sha256
+            ```
+
+            ## Quick Start
+            ```bash
+            export OPENAI_API_KEY="sk-..."
+            cd your-repo
+            git add .
+            ai-commit
+            ```
+
+            See [README](https://github.com/${{ github.repository }}) for full documentation.
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

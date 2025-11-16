@@ -1,0 +1,52 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  build-and-test:
+    name: Build on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup GraalVM
+        uses: graalvm/setup-graalvm@v1
+        with:
+          java-version: '25'
+          distribution: 'graalvm'
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Cache Maven
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-maven-
+
+      - name: Build JAR
+        run: mvn clean package -DskipTests
+
+      - name: Test Native Compilation
+        run: mvn clean package -Pnative -DskipTests
+
+      - name: Test Binary (Unix)
+        if: runner.os != 'Windows'
+        run: |
+          ./target/ai-commit --version
+          ./target/ai-commit --help
+
+      - name: Test Binary (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          .\target\ai-commit.exe --version
+          .\target\ai-commit.exe --help
