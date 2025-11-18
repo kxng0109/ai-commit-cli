@@ -196,10 +196,10 @@ ai-commit
 1. **Stage your changes:** `git add .`
 2. **Run ai-commit:** Analyzes the git diff
 3. **AI generates message:** Sends to your configured provider (OpenAI, OpenRouter, Ollama, etc.)
-4. **Auto-commits:** Applies the formatted conventional commit message
+4. **Alerts user:** Shows the commit message with some options for the user to decide if they are satisfied with the generated commit message. 
 
 ```
-Your staged diff → AI analysis → feat(auth): add OAuth2 flow → committed
+Your staged diff → AI analysis → feat(auth): add OAuth2 flow → options
 ```
 
 ## Real-World Comparison
@@ -245,9 +245,17 @@ refresh token rotation, and secure session management.
 BREAKING CHANGE: API now requires OAuth2 tokens
 ────────────────────────────────────────────────────────────
 
+Commit with this message? (y)es / (r)egenerate / (e)dit / (c)ancel [y]: y
+
 [main abc1234] feat(auth): add OAuth2 authentication flow
  3 files changed, 145 insertions(+), 12 deletions(-)
 ```
+
+**Options:**
+- **`y` (yes)** - Commit with the AI-generated message (default, just press Enter)
+- **`r` (regenerate)** - Generate a new message
+- **`e` (edit)** - Manually edit the message before committing
+- **`c` (cancel)** - Cancel and don't commit
 
 ## Advanced Configuration
 
@@ -259,7 +267,7 @@ Access Claude, GPT-4, Llama, and more through [OpenRouter](https://openrouter.ai
 export OPENAI_API_KEY="sk-or-v1-..."
 export OPENAI_BASE_URL="https://openrouter.ai/api/v1"
 export OPENAI_MODEL="qwen/qwen3-coder"
-# or: "openai/gpt-4o", "meta-llama/llama-3-70b", etc.
+# or: "openai/gpt-4o", etc.
 git add .
 ai-commit
 ```

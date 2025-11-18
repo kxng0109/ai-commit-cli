@@ -7,43 +7,56 @@ import org.springframework.ai.chat.messages.UserMessage;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.prompt.Prompt;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.ConnectException;
 import java.util.List;
 
 /**
- * The {@code CommitService} class provides functionality to automate the process of generating
- * and committing a high-quality, AI-assisted Git commit message for staged changes in a repository.
+ * The {@code CommitService} class provides functionality to streamline Git commit operations
+ * by leveraging AI-enhanced commit message generation and interactive user prompts.
  * <p>
- * This service integrates with a given {@link GitService} for Git operations and a {@link ChatModel}
- * for AI-driven commit message generation. It ensures that commit messages adhere to standardized formats
- * and enhances productivity while maintaining consistency.
+ * This service integrates with a Git management system and an AI model to improve the quality
+ * of commit messages by suggesting meaningful and concise messages based on staged changes.
+ * It allows users to review, regenerate, edit, or confirm commit messages before recording
+ * changes in the repository.
  * </p>
  *
- * <h2>Key Features:</h2>
+ * <p>
+ * Key features of this service include:
  * <ul>
- *   <li>Validates the presence of staged changes before commit generation.</li>
- *   <li>Uses AI to craft precise, professional commit messages based on diff details.</li>
- *   <li>Displays the generated commit message for user visibility.</li>
- *   <li>Handles errors such as absent staged changes or AI service connectivity issues gracefully.</li>
+ *   <li>Integration with {@link GitService} for repository management.</li>
+ *   <li>AI-powered commit message generation using {@link ChatModel}.</li>
+ *   <li>Interactive console-based prompts for reviewing and editing commit messages.</li>
+ * </ul>
+ * </p>
+ *
+ * Fields:
+ * <ul>
+ *   <li>{@code SYSTEM_PROMPT}: A string constant used internally for system-specific operations.</li>
+ *   <li>{@code log}: A logging mechanism to track errors and actions during execution.</li>
+ *   <li>{@code gitService}: Facilitates Git-related operations like staging and commits.</li>
+ *   <li>{@code chatModel}: Handles AI-driven commit message generation.</li>
+ *   <li>{@code reader}: Manages user input for interactive operations through the console.</li>
  * </ul>
  *
- * <h2>Usage:</h2>
- * Instantiate the {@code CommitService} with the required {@link GitService} and {@link ChatModel} dependencies.
- * Call {@link #generateAndCommit()} to automate the commit message creation and commit process.
- *
- * <h2>Exceptions:</h2>
+ * Primary Methods:
  * <ul>
- *   <li>{@link IllegalStateException} if no staged changes are available or the AI generates an empty message.</li>
- *   <li>{@link RuntimeException} for other errors such as connectivity issues with the AI provider.</li>
+ *   <li>{@link #generateAndCommit()}: Automatically generates commit messages based on staged changes and
+ *       commits them with user approval.</li>
+ *   <li>{@link #promptUser()}: Provides an interactive prompt for user action during commit operations
+ *       (e.g., accept, regenerate, edit).</li>
+ *   <li>{@link #editCommitMessage(String)}: Allows customization of AI-generated commit messages through user input.</li>
+ *   <li>{@link #generateMessage(String)}: Creates AI-suggested commit messages from a given Git diff.</li>
+ *   <li>{@link #displayMessage(String)}: Formats and displays AI-generated messages for better readability.</li>
+ *   <li>{@link #displayGitOutput(String)}: Formats and outputs results of Git commands for user clarity.</li>
  * </ul>
  *
- * <h2>Dependencies:</h2>
- * This class relies on:
- * <ul>
- *   <li>{@link GitService} for handling Git commands.</li>
- *   <li>{@link ChatModel} for generating AI-based commit messages.</li>
- *   <li>A logging framework ({@link Logger}) for status updates and error tracking.</li>
- * </ul>
+ * <h3>Usage:</h3>
+ * A {@code CommitService} instance must be instantiated with dependencies including {@link GitService},
+ * {@link ChatModel}, and a {@link BufferedReader}. Once created, the {@code generateAndCommit()} method can
+ * be invoked to initiate the commit process.
  */
 public class CommitService {
 
@@ -97,22 +110,59 @@ public class CommitService {
 
     private final GitService gitService;
     private final ChatModel chatModel;
+    private final BufferedReader reader;
 
-    public CommitService(GitService gitService, ChatModel chatModel) {
+    /**
+     * Constructs a new {@code CommitService} instance, initializing its dependencies.
+     * <p>
+     * This constructor ensures the {@code CommitService} is properly set up by
+     * associating it with a {@link GitService} for Git operations, a {@link ChatModel}
+     * for AI-driven operations, and a {@link BufferedReader} for user input handling.
+     * These parameters are critical for enabling the core functionality of the service.
+     * </p>
+     *
+     * @param gitService the {@link GitService} instance responsible for managing Git-related operations
+     * @param chatModel the {@link ChatModel} instance used for AI-generated commit message enhancements
+     * @param reader the {@link BufferedReader} instance for reading user input during interactions
+     */
+    public CommitService(GitService gitService, ChatModel chatModel, BufferedReader reader) {
         this.gitService = gitService;
         this.chatModel = chatModel;
+        this.reader = reader;
     }
 
     /**
-     * Automates the process of generating an AI-assisted Git commit message and committing staged changes.
+     * Initializes a {@code CommitService} instance with the required dependencies.
      * <p>
-     * This method checks for existing staged changes in the repository. If no changes are staged, it throws
-     * an {@link IllegalStateException}. Upon detecting staged changes, it fetches the diff details, uses an
-     * AI model to generate a descriptive commit message, displays the generated message, and commits the changes
-     * with the generated message. The output of the Git commit command is then displayed on the console.
+     * This constructor configures the {@code CommitService} by associating it with a
+     * {@link GitService} for handling Git-related operations and a {@link ChatModel}
+     * for leveraging AI capabilities. A {@link BufferedReader} is also set up to
+     * facilitate user input interactions from the console.
      * </p>
      *
-     * @throws IllegalStateException if there are no staged changes available
+     * @param gitService the {@link GitService} instance responsible for managing Git operations
+     * @param chatModel the {@link ChatModel} instance enabling AI-driven enhancements
+     */
+    public CommitService(GitService gitService, ChatModel chatModel) {
+        this.gitService = gitService;
+        this.chatModel = chatModel;
+        this.reader = new BufferedReader(new InputStreamReader(System.in));
+    }
+
+    /**
+     * Generates and commits changes with the assistance of AI for creating commit messages.
+     * <p>
+     * This method performs the following steps:
+     * <ul>
+     *   <li>Checks whether there are staged changes in the Git repository and throws an exception if none are found.</li>
+     *   <li>Generates an AI-driven commit message based on the staged diff.</li>
+     *   <li>Displays the generated message and prompts the user for an action (accept, regenerate, edit, or cancel).</li>
+     *   <li>Processes user input to either commit the changes, regenerate, edit the message, or abort the commit process.</li>
+     * </ul>
+     * The commit process is only completed when the user confirms the commit or provides an edited commit message.
+     * </p>
+     *
+     * @throws IllegalStateException if no staged changes are found in the repository.
      */
     public void generateAndCommit() {
         log.info("Checking for staged changes...");
@@ -121,17 +171,127 @@ public class CommitService {
         }
 
         String diff = gitService.getStagedDiff();
+        String commitMessage = null;
+        boolean isCommitted = false;
 
-        log.info("Generating commit message with AI...");
-        String commitMessage = generateMessage(diff);
+        while(!isCommitted) {
+            if(commitMessage == null) {
+                log.info("Generating commit message with AI...");
+                commitMessage = generateMessage(diff);
+            }
 
-        displayMessage(commitMessage);
+            displayMessage(commitMessage);
 
-        log.info("Committing changes...");
-        String output = gitService.commit(commitMessage);
+            String choice = promptUser();
 
-        displayGitOutput(output);
-        log.info("Committed changes successfully.");
+            switch (choice) {
+                case "y":
+                    log.info("Committing changes...");
+                    String output = gitService.commit(commitMessage);
+
+                    displayGitOutput(output);
+                    log.info("Committed changes successfully.");
+                    isCommitted = true;
+                    break;
+
+                case "r":
+                    log.info("\nRegenerating commit message...");
+                    commitMessage = null;
+                    break;
+
+                case "e":
+                    commitMessage = editCommitMessage(commitMessage);
+                    if (commitMessage == null) {
+                        System.out.println("Edit cancelled.");
+                        isCommitted = true;
+                        break;
+                    }
+
+                    if(!commitMessage.isEmpty()) {
+                        log.info("Using edited message as commit message...");
+                        String editOutput = gitService.commit(commitMessage);
+                        displayGitOutput(editOutput);
+                        log.info("Committed changes successfully.");
+                        isCommitted = true;
+                    }
+                    break;
+
+                case "c":
+                    System.out.println();
+                    System.out.println("Cancelling commit...");
+                    isCommitted = true; //Just to break out of the while loop
+                    break;
+
+                default:
+                    System.out.println("Invalid choice. Please try again.");
+            }
+
+        }
+    }
+
+    /**
+     * Prompts the user for input regarding the next action to take with the provided commit message.
+     * <p>
+     * This method displays a set of options to the user: confirm the commit message (yes), regenerate,
+     * edit, or cancel. If the user provides no input or an invalid input, the default action is
+     * considered as "yes". In case of an error during input reading, the method also defaults to "yes".
+     * </p>
+     *
+     * @return the user's choice as a lowercase string: "y", "r", "e", or "c". Defaults to "y" if no input
+     * is provided or an IOException occurs.
+     */
+    private String promptUser() {
+        System.out.println();
+        System.out.println("Commit with this message? (y)es / (r)egenerate / (e)dit / (c)ancel [y]: ");
+        System.out.flush();
+
+        try{
+            String input = reader.readLine();
+            if(input == null || input.isBlank() || input.trim().isEmpty()) {
+                return "y";
+            }
+            return input.trim().toLowerCase();
+        } catch (IOException e) {
+            log.error("Failed to read user input: {}", e.getMessage());
+            return "y";
+        }
+    }
+
+    /**
+     * Allows the user to edit a commit message interactively through the console.
+     * <p>
+     * This method displays the current commit message to the user and prompts them to either enter
+     * a new message or press Enter to keep the original message unchanged. If an input error occurs
+     * or the user does not provide a valid new message, the original message is returned by default.
+     * </p>
+     *
+     * @param originalMessage the original commit message to be potentially modified by the user
+     * @return the new commit message provided by the user, or the original message if no valid input is given
+     */
+    private String editCommitMessage(String originalMessage) {
+        System.out.println();
+        System.out.println("=".repeat(60));
+        System.out.println("Current message:");
+        System.out.println(originalMessage);
+        System.out.println("=".repeat(60));
+        System.out.println();
+        System.out.println("Enter new commit message or press Enter to keep current one:");
+        System.out.println("> ");
+        System.out.flush();
+
+        try{
+            String newMessage = reader.readLine();
+            if (newMessage == null || newMessage.trim().isEmpty()) {
+                System.out.println("Empty message. Using original commit message.");
+                return originalMessage;
+            }
+
+            return newMessage.trim();
+        } catch (IOException e) {
+            log.error("Failed to read user input: {}", e.getMessage());
+            System.out.println("Error reading user input. Using original commit message.");
+            return originalMessage;
+        }
     }
 
     /**
