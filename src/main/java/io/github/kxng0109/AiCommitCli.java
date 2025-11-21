@@ -41,6 +41,10 @@ import java.util.Properties;
  * @see #printHelp()
  */
 public class AiCommitCli {
+    static {
+        configureLogging();
+    }
+
     private static final Logger log = LoggerFactory.getLogger(AiCommitCli.class);
     private static final String VERSION = loadVersion();
 
@@ -57,8 +61,6 @@ public class AiCommitCli {
                 System.exit(0);
             }
         }
-
-        configureLogging();
 
         try {
             Config config = Config.loadFromEnv();

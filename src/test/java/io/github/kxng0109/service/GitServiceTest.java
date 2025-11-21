@@ -37,16 +37,14 @@ public class GitServiceTest {
     @Test
     void hasStagedChanges_inNonGitDirectory_shouldReturnFalse() throws IOException {
         Path nonGitDir = Files.createTempDirectory("non-git-test");
-        String originalDir = System.getProperty("user.dir");
 
         try {
-            System.setProperty("user.dir", nonGitDir.toString());
+            gitService = new GitService(5, nonGitDir.toString());
 
             boolean result = gitService.hasStagedChanges();
 
             assertFalse(result, "Should return false for non-git directory");
         } finally {
-            System.setProperty("user.dir", originalDir);
             deleteDirectoryWithRetry(nonGitDir);
         }
     }
@@ -54,71 +52,55 @@ public class GitServiceTest {
     @Test
     void hasStagedChanges_inGitRepoWithNoChanges_shouldReturnFalse() throws Exception {
         initGitRepo(tempDir);
-        String originalDir = System.getProperty("user.dir");
-        System.setProperty("user.dir", tempDir.toString());
 
-        try {
-            boolean result = gitService.hasStagedChanges();
+        gitService = new GitService(5, tempDir.toString());
 
-            assertFalse(result, "Should return false when no changes are staged");
-        } finally {
-            System.setProperty("user.dir", originalDir);
-        }
+        boolean result = gitService.hasStagedChanges();
+
+        assertFalse(result, "Should return false when no changes are staged");
     }
 
     @Test
     void hasStagedChanges_withStagedFiles_shouldReturnTrue() throws Exception {
         initGitRepo(tempDir);
         createAndStageFile(tempDir, "test.txt", "test content");
-        String originalDir = System.getProperty("user.dir");
-        System.setProperty("user.dir", tempDir.toString());
 
-        try {
-            boolean result = gitService.hasStagedChanges();
+        gitService = new GitService(5, tempDir.toString());
 
-            assertTrue(result, "Should return true when files are staged");
-        } finally {
-            System.setProperty("user.dir", originalDir);
-        }
+        boolean result = gitService.hasStagedChanges();
+
+        assertTrue(result, "Should return true when files are staged");
     }
 
     @Test
     void getStagedDiff_withStagedChanges_shouldReturnDiff() throws Exception {
         initGitRepo(tempDir);
         createAndStageFile(tempDir, "test.txt", "hello world");
-        String originalDir = System.getProperty("user.dir");
-        System.setProperty("user.dir", tempDir.toString());
 
-        try {
-            String diff = gitService.getStagedDiff();
+        gitService = new GitService(5, tempDir.toString());
 
-            assertNotNull(diff);
-            assertFalse(diff.isEmpty());
-            assertTrue(diff.contains("test.txt") || diff.contains("hello world"),
-                       "Diff should contain file name or content"
-            );
-        } finally {
-            System.setProperty("user.dir", originalDir);
-        }
+        String diff = gitService.getStagedDiff();
+
+        assertNotNull(diff);
+        assertFalse(diff.isEmpty());
+        assertTrue(diff.contains("test.txt") || diff.contains("hello world"),
+                   "Diff should contain file name or content"
+        );
     }
 
     @Test
     void commit_withValidMessage_shouldCommitSuccessfully() throws Exception {
         initGitRepo(tempDir);
         createAndStageFile(tempDir, "test.txt", "content");
-        String originalDir = System.getProperty("user.dir");
-        System.setProperty("user.dir", tempDir.toString());
 
-        try {
-            String result = gitService.commit("test: add test file");
+        gitService = new GitService(5, tempDir.toString());
 
-            assertNotNull(result);
-            assertTrue(result.contains("test: add test file") || result.contains("test.txt"),
-                       "Commit output should reference the commit"
-            );
-        } finally {
-            System.setProperty("user.dir", originalDir);
-        }
+        String result = gitService.commit("test: add test file");
+
+        assertNotNull(result);
+        assertTrue(result.contains("test: add test file") || result.contains("test.txt"),
+                   "Commit output should reference the commit"
+        );
     }
 
 

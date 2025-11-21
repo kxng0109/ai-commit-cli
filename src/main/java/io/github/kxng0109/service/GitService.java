@@ -9,30 +9,96 @@ import java.nio.charset.StandardCharsets;
 import java.util.concurrent.TimeUnit;
 
 /**
- * A service class that provides utility methods for interacting with a Git repository.
- * This class supports operations such as retrieving staged changes, committing them,
- * and checking for staged changes. It utilizes underlying Git commands for execution.
+ * The {@code GitService} class provides a simplified and programmatic approach to
+ * interacting with a Git repository. It supports common Git operations such as
+ * retrieving staged diffs, committing changes, and checking for staged changes.
+ *
+ * The class enforces a specified timeout for operations to ensure commands
+ * do not hang indefinitely. Additionally, it allows setting a working directory
+ * for Git command executions.
+ *
+ * <p>Key Features:
+ * <ul>
+ *   <li>Detect working directory using the current environment or a fallback mechanism</li>
+ *   <li>Retrieve the diff of staged changes</li>
+ *   <li>Commit changes with custom messages</li>
+ *   <li>Safeguard against operations exceeding a set timeout duration</li>
+ *   <li>Execute custom Git commands with error handling</li>
+ * </ul>
  */
 public class GitService {
 
     private static final Logger log = LoggerFactory.getLogger(GitService.class);
 
     private final int timeoutSeconds;
+    private final String workingDirectory;
 
-    public GitService(int timeoutSeconds) {
+    /**
+     * Constructs a new {@code GitService} instance with a specified operation timeout and working directory.
+     * This enables timeout control and specifies the directory where Git operations will be performed.
+     *
+     * @param timeoutSeconds    the maximum operation timeout in seconds; Git commands exceeding this duration
+     *                          will be forcefully terminated to prevent indefinite hangs
+     * @param workingDirectory  the absolute path of the directory where Git commands should be executed;
+     *                          this must be a valid and accessible directory path
+     */
+    public GitService(int timeoutSeconds, String workingDirectory) {
         this.timeoutSeconds = timeoutSeconds;
+        this.workingDirectory = workingDirectory;
     }
 
     /**
-     * Retrieves the differences between the currently staged changes and the repository's HEAD.
-     * This method uses the Git command `git diff --staged` to fetch the diff of files
-     * that have been staged for commit.
+     * Constructs a new {@code GitService} instance with a specified operation timeout.
+     * The working directory for Git operations is automatically detected using
+     * a platform-appropriate mechanism.
      *
-     * @return a string representing the staged differences in unified diff format.
+     * @param timeoutSeconds the maximum operation timeout in seconds. This value determines
+     *                        the duration after which Git commands are forcefully terminated
+     *                        to prevent hanging.
+     */
+    public GitService(int timeoutSeconds) {
+        this(timeoutSeconds, detectWorkingDirectory());
+    }
+
+    /**
+     * Detects the current working directory by attempting to retrieve it using the `PWD` environment variable
+     * (primarily for Unix-like systems such as MacOS and Linux) or by falling back to the absolute path of the
+     * current directory if the `PWD` variable is unavailable or invalid.
+     *
+     * @return the absolute path to the detected working directory as a {@code String}. Returns the value of the `PWD`
+     * environment variable if valid and points to an existing directory; otherwise, falls back to the absolute path
+     * of the current directory.
+     */
+    private static String detectWorkingDirectory() {
+        //For MacOS and Linux
+        String pwd = System.getenv("PWD");
+        if (pwd != null && !pwd.isEmpty()) {
+            File pwdFile = new File(pwd);
+            if (pwdFile.exists() && pwdFile.isDirectory()) {
+                log.debug("Detected working directory from PWD: {}", pwd);
+                return pwd;
+            }
+        }
+
+        // Fallback: get absolute path of current directory
+        String fallback = new File(".").getAbsoluteFile().getParent();
+        log.debug("Using fallback working directory: {}", fallback);
+        return new File(".").getAbsoluteFile().getParent();
+    }
+
+    /**
+     * Retrieves the diff of staged changes in the current Git repository.
+     * This method executes the Git command to fetch differences for files
+     * that have been staged for commit, allowing the user to review the changes.
+     *
+     * @return a {@code String} containing the diff of staged files. If no changes
+     *         are staged, the return value will be an empty string.
      */
     public String getStagedDiff() {
         log.debug("Retrieving staged changes...");
-        return runCommand("git", "diff", "--staged");
+        String result = runCommand("git", "--no-pager", "diff", "--staged");
+        log.debug("Retrieved {} characters of staged diff", result.length());
+        return result;
     }
 
     /**
@@ -67,28 +133,60 @@ public class GitService {
     }
 
     /**
-     * Executes a shell command represented as a sequence of strings and retrieves its output.
-     * This method utilizes {@link ProcessBuilder} to run the command, sets the current working
-     * directory to the user's directory, and enforces a timeout to avoid indefinite hangs.
-     * Errors and non-zero exit codes are handled by throwing runtime exceptions.
+     * Executes a shell command using the specified arguments and returns the resulting output as a string.
+     * The method utilizes a {@link ProcessBuilder} to execute the command in a specified working directory,
+     * captures both standard output and error streams, and enforces a timeout to prevent hanging processes.
+     * If the command fails or the process exceeds the designated timeout, an appropriate exception is thrown.
      *
-     * @param command the command to execute, provided as an array of strings where the first string represents
-     *                the command name and subsequent strings represent the arguments
-     * @return the standard output of the executed command as a trimmed string
-     * @throws RuntimeException if the command fails, times out, or is interrupted
+     * @param command the command to execute, represented as a variable-length argument array of strings.
+     *                Each string corresponds to a part of the command or its arguments.
+     * @return the standard output of the executed command as a {@code String}, trimmed of leading and trailing whitespace.
+     * @throws RuntimeException if the command execution fails, times out, or if the process exits with a non-zero status.
      */
     private String runCommand(String... command) {
         ProcessBuilder processBuilder = new ProcessBuilder(command);
 
-        File workingDir = new File(System.getProperty("user.dir"));
+        File workingDir = new File(workingDirectory);
+        log.debug("Using working directory: {}", workingDir.getAbsolutePath());
+
         processBuilder.directory(workingDir);
-        processBuilder.redirectErrorStream(true);
+
+        // Disable Git pager to prevent interactive prompts
+        processBuilder.environment().put("GIT_PAGER", "cat");
 
         Process process = null;
         try {
             process = processBuilder.start();
+
+            StringBuilder outputBuilder = new StringBuilder();
+            StringBuilder errorBuilder = new StringBuilder();
+
+            Process finalProcess1 = process;
+            Thread outputThread = new Thread(() -> {
+                try {
+                    outputBuilder.append(new String(finalProcess1.getInputStream().readAllBytes(), StandardCharsets.UTF_8));
+                } catch (IOException e) {
+                    log.debug("Error reading output stream", e);
+                }
+            });
+
+            Process finalProcess = process;
+            Thread errorThread = new Thread(() -> {
+                try {
+                    errorBuilder.append(new String(finalProcess.getErrorStream().readAllBytes(), StandardCharsets.UTF_8));
+                } catch (IOException e) {
+                    log.debug("Error reading error stream", e);
+                }
+            });
+
+            outputThread.start();
+            errorThread.start();
+
             // Just to prevent the process from hanging indefinitely
             boolean finished = process.waitFor(timeoutSeconds, TimeUnit.SECONDS);
+
+            outputThread.join(1000);
+            errorThread.join(1000);
 
             if (!finished) {
                 process.destroyForcibly();
@@ -96,9 +194,8 @@ public class GitService {
                         String.format("Timeout while waiting for process('%s') to finish", String.join(" ", command)));
             }
 
-            String output = new String(process.getInputStream().readAllBytes(), StandardCharsets.UTF_8).trim();
-            String error = new String(process.getErrorStream().readAllBytes(), StandardCharsets.UTF_8).trim();
-
+            String output = outputBuilder.toString().trim();
+            String error = errorBuilder.toString().trim();
             int exitCode = process.exitValue();
 
             if (exitCode != 0) {
