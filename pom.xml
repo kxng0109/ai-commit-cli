@@ -6,7 +6,7 @@
 
     <groupId>io.github.kxng0109</groupId>
     <artifactId>ai-commit-cli</artifactId>
-    <version>1.1.1</version>
+    <version>1.2.0</version>
 
     <properties>
         <java.version>25</java.version>

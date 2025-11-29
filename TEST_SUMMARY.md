@@ -1,6 +1,6 @@
 # Test Suite Summary
 
-## Total Tests: 27
+## Total Tests: 27 + New Tests for Configuration Features
 
 ### ConfigTest.java (10 tests)
 **What it tests:** Configuration loading and validation
@@ -92,7 +92,6 @@ mvn package -DskipTests
 ## Test Dependencies
 
 ```xml
-
 <dependency>
     <groupId>org.junit.jupiter</groupId>
     <artifactId>junit-jupiter</artifactId>
@@ -117,12 +116,13 @@ mvn package -DskipTests
 
 ## Test Coverage
 
-| Class | Tests | Coverage |
-|-------|-------|----------|
-| Config | 10 | ~90% (all public methods) |
-| AiProviderFactory | 4 | ~70% (main logic + error handling) |
-| GitService | 6 | ~80% (all public methods, requires git) |
-| CommitService | 7 | ~85% (all scenarios + edge cases) |
+| Class | Tests   | Coverage |
+|-------|---------|----------|
+| Config | 10      | ~90% (all public methods) |
+| AiProviderFactory | 4       | ~70% (main logic + error handling) |
+| GitService | 6       | ~80% (all public methods, requires git) |
+| CommitService | 7       | ~85% (all scenarios + edge cases) |
+| UserPreferences | 12      | Persistent storage operations |
 
 ## CI Integration
 
@@ -138,4 +138,6 @@ See `.github/workflows/ci.yml`
 - **GitServiceTest** requires `git` installed and in PATH
 - **CommitServiceTest** uses mocks (no real AI calls)
 - **AiProviderFactoryTest** creates real provider instances (no API calls)
+- **UserPreferencesTest** tests Java Preferences API (isolated per test)
 - All tests are fast (<5 seconds total)
+- Cleanup methods ensure no test pollution between runs

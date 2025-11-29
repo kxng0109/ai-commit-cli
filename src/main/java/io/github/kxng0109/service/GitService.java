@@ -11,7 +11,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * The {@code GitService} class provides a simplified and programmatic approach to
  * interacting with a Git repository. It supports common Git operations such as
- * retrieving staged diffs, committing changes, and checking for staged changes.
+ * retrieving staged diffs, committing changes, pushing changes, and checking for staged changes.
  *
  * The class enforces a specified timeout for operations to ensure commands
  * do not hang indefinitely. Additionally, it allows setting a working directory
@@ -22,6 +22,7 @@ import java.util.concurrent.TimeUnit;
  *   <li>Detect working directory using the current environment or a fallback mechanism</li>
  *   <li>Retrieve the diff of staged changes</li>
  *   <li>Commit changes with custom messages</li>
+ *   <li>Push changes to remote repository</li>
  *   <li>Safeguard against operations exceeding a set timeout duration</li>
  *   <li>Execute custom Git commands with error handling</li>
  * </ul>
@@ -112,6 +113,19 @@ public class GitService {
     public String commit(String message) {
         log.debug("Committing changes...");
         return runCommand("git", "commit", "--message", message);
+    }
+    
+    /**
+     * Pushes changes to the remote Git repository using the `git push` command.
+     * This method executes the push operation in the context of the configured 
+     * working directory and logs the operation for debugging purposes.
+     *
+     * @return the output of the `git push` command as a {@code String}. Typically includes
+     *         information about the success or failure of the push operation.
+     */
+    public String push(){
+        log.debug("Pushing changes...");
+        return runCommand("git", "push");
     }
 
     /**

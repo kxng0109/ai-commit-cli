@@ -7,6 +7,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.0] - 2025-11-29
+
+### Added
+- **Persistent user preferences** - Settings now persist across application restarts
+  - `ai-commit config --auto-commit [on|off]` - Enable/disable automatic commit without prompts
+  - `ai-commit config --auto-push [on|off]` - Enable/disable automatic push after committing
+  - `ai-commit config --show` - Display current configuration settings
+  - `ai-commit config --reset` - Reset all settings to defaults
+  - Settings stored using Java Preferences API (Registry on Windows, .plist on macOS, XML on Linux)
+- **Auto-commit mode** - Skip interactive prompts and commit immediately after AI generation
+  - Significantly faster workflow for rapid development
+  - Automatically aborts if AI generation fails (no changes committed)
+  - Warning displayed when enabling about loss of regenerate/edit/cancel options
+- **Auto-push mode** - Automatically push changes after committing
+  - Works independently with both interactive and auto-commit modes
+  - With auto-commit OFF: Pushes after accepting in interactive prompt (review commits, skip manual push)
+  - With auto-commit ON: Pushes immediately after auto-commit (full automation)
+  - Gracefully handles push failures (commit still succeeds)
+- **Configuration command system** - New `config` subcommand for managing preferences
+  - `ai-commit config --help` - Show configuration help
+  - Interactive and auto modes coexist - easily switch between workflows
+
+### Changed
+- `CommitService` now checks user preferences before deciding workflow mode
+- Interactive prompts only shown when auto-commit is disabled
+- Help text updated to include configuration commands
+- README and documentation updated with auto-commit/auto-push examples
+
+### Technical
+- Added `UserPreferences` class for persistent storage management
+- Updated `CommitService` with auto-commit and auto-push logic
+- Added `push()` method to `GitService` for git push operations
+- Enhanced error handling for auto-commit mode
+
 ## [1.1.1] - 2025-11-21
 
 ### Fixed
@@ -65,7 +99,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Spring AI 1.1.0
 - Native binary size: ~99MB
 
-[Unreleased]: https://github.com/kxng0109/ai-commit-cli/compare/v1.1.1...HEAD
+[Unreleased]: https://github.com/kxng0109/ai-commit-cli/compare/v1.2.0...HEAD
+[1.2.0]: https://github.com/kxng0109/ai-commit-cli/releases/tag/v1.2.0
 [1.1.1]: https://github.com/kxng0109/ai-commit-cli/releases/tag/v1.1.1
 [1.1.0]: https://github.com/kxng0109/ai-commit-cli/releases/tag/v1.1.0
 [1.0.0]: https://github.com/kxng0109/ai-commit-cli/releases/tag/v1.0.0

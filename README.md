@@ -39,6 +39,8 @@ So I built this. A standalone CLI that works everywhere, supports any OpenAI-com
 - **True Multi-Provider Support** - OpenAI, Anthropic, Google Gemini, DeepSeek, Ollama, or any OpenAI-compatible API (OpenRouter, Together AI, etc.)
 - **Use Any API** - Not limited to specific providers. Bring your own endpoint
 - **Conventional Commits** - Follows [specification](https://www.conventionalcommits.org/) automatically
+- **Interactive Mode** - Review, regenerate, edit, or cancel before committing
+- **Auto-Commit & Auto-Push** - Flexible automation options (work independently for maximum flexibility)
 - **Native Binary** - No runtime dependencies, starts in <50ms
 - **Cross-Platform** - Linux, macOS, Windows
 - **Privacy Option** - Use Ollama for 100% local processing (but be sure that you're using a model that your system can handle)
@@ -165,6 +167,94 @@ ai-commit
 | `AI_COMMAND_TIMEOUT` | 30 | 1 - 3600 seconds |
 | `AI_LOG_LEVEL` | WARN | ERROR, WARN, INFO, DEBUG |
 
+### User Preferences (Persistent)
+
+Configure workflow automation that persists across restarts:
+
+```bash
+# View current settings
+ai-commit config --show
+
+# Enable auto-commit (skip interactive prompts)
+ai-commit config --auto-commit on
+
+# Enable auto-push (push after committing)
+ai-commit config --auto-push on
+
+# Disable automation
+ai-commit config --auto-commit off
+ai-commit config --auto-push off
+
+# Reset all settings
+ai-commit config --reset
+
+# Show config help
+ai-commit config --help
+```
+
+## Usage Modes
+
+### Interactive Mode (Default)
+
+Review and control every commit:
+
+```bash
+git add .
+ai-commit
+```
+
+**Output:**
+```
+AI generated commit message:
+────────────────────────────────────────────────────────────
+feat(auth): add OAuth2 authentication flow
+
+Implement Google OAuth2 integration with JWT token handling
+and secure session management.
+────────────────────────────────────────────────────────────
+
+Commit with this message? (y)es / (r)egenerate / (e)dit / (c)ancel [y]:
+```
+
+**Options:**
+- **`y` (yes)** - Commit with the AI-generated message (default, just press Enter)
+- **`r` (regenerate)** - Generate a new message with different wording
+- **`e` (edit)** - Manually edit the message before committing
+- **`c` (cancel)** - Cancel and don't commit
+
+### Auto-Commit Mode
+
+Skip prompts and commit immediately:
+
+```bash
+# One-time setup
+ai-commit config --auto-commit on
+
+# Fast workflow
+git add .
+ai-commit  # Commits automatically, no prompts
+```
+
+**⚠️ Warning:** When auto-commit is enabled:
+- You cannot regenerate the message
+- You cannot edit the message
+- You cannot cancel the commit
+- If AI generation fails, nothing is committed
+
+### Auto-Push Mode
+
+Automatically push after committing:
+
+```bash
+# One-time setup (requires auto-commit)
+ai-commit config --auto-commit on
+ai-commit config --auto-push on
+
+# Super fast workflow
+git add feature.js
+ai-commit  # Commits AND pushes instantly!
+```
+
 ## Examples
 
 **OpenAI:**
@@ -191,6 +281,29 @@ git add .
 ai-commit
 ```
 
+**Rapid Development Workflow:**
+```bash
+# One-time setup
+ai-commit config --auto-commit on
+ai-commit config --auto-push on
+
+# Daily usage
+git add src/
+ai-commit  # Committed and pushed
+git add tests/
+ai-commit  # Committed and pushed
+```
+
+**Careful Review Workflow:**
+```bash
+# Ensure interactive mode
+ai-commit config --auto-commit off
+
+# Review each commit
+git add feature.js
+ai-commit
+```
+
 ## How It Works
 
 1. **Stage your changes:** `git add .`
@@ -199,7 +312,7 @@ ai-commit
 4. **Alerts user:** Shows the commit message with some options for the user to decide if they are satisfied with the generated commit message. 
 
 ```
-Your staged diff → AI analysis → feat(auth): add OAuth2 flow → options
+Staged diff → AI analysis → Commit message → [Interactive/Auto] → Git commit → [Optional push]
 ```
 
 ## Real-World Comparison
@@ -218,6 +331,7 @@ Your staged diff → AI analysis → feat(auth): add OAuth2 flow → options
 ```
 ✅ Use ANY provider (OpenRouter, DeepSeek, custom endpoints)
 ✅ Works anywhere (any IDE, terminal, SSH sessions)
+✅ Auto-commit & auto-push for rapid workflows
 ✅ Free and open source
 ✅ Full control over API costs
 ✅ 100% local option with Ollama
@@ -231,7 +345,7 @@ Your staged diff → AI analysis → feat(auth): add OAuth2 flow → options
 git commit -m "updated auth stuff"
 ```
 
-**After:**
+**After (Interactive Mode):**
 ```bash
 $ ai-commit
 
@@ -251,11 +365,28 @@ Commit with this message? (y)es / (r)egenerate / (e)dit / (c)ancel [y]: y
  3 files changed, 145 insertions(+), 12 deletions(-)
 ```
 
-**Options:**
-- **`y` (yes)** - Commit with the AI-generated message (default, just press Enter)
-- **`r` (regenerate)** - Generate a new message
-- **`e` (edit)** - Manually edit the message before committing
-- **`c` (cancel)** - Cancel and don't commit
+**After (Auto-Commit Mode):**
+```bash
+$ ai-commit
+
+AI generated commit message:
+────────────────────────────────────────────────────────────
+feat(auth): add OAuth2 authentication flow
+
+Implement Google OAuth2 integration with JWT token handling,
+refresh token rotation, and secure session management.
+────────────────────────────────────────────────────────────
+
+Auto-committing...
+
+[main abc1234] feat(auth): add OAuth2 authentication flow
+ 3 files changed, 145 insertions(+), 12 deletions(-)
+
+Auto-pushing...
+
+To github.com:user/repo.git
+   def5678..abc1234  main -> main
+```
 
 ## Advanced Configuration
 
@@ -293,6 +424,21 @@ ai-commit
 
 ```bash
 export AI_COMMAND_TIMEOUT="120"  # 2 minutes (default: 30)
+```
+
+### Workflow Customization
+
+```bash
+# Maximum speed. Auto-commit + auto-push
+ai-commit config --auto-commit on
+ai-commit config --auto-push on
+
+# Fast commits, manual pushes. Review before pushing
+ai-commit config --auto-commit on
+ai-commit config --auto-push off
+
+# Full control. Review every message
+ai-commit config --auto-commit off
 ```
 
 ## Technical Details
@@ -334,6 +480,20 @@ ai-commit
 - Ensure binary is in PATH
 - Restart terminal after installation
 
+**"Auto-push failed but commit succeeded"**
+- This is expected behavior but commit is preserved
+- Push manually: `git push`
+- Check remote configuration: `git remote -v`
+
+**"Auto-commit not working"**
+```bash
+# Check if enabled
+ai-commit config --show
+
+# Enable it
+ai-commit config --auto-commit on
+```
+
 ## Development
 
 ```bash
@@ -347,6 +507,9 @@ mvn clean package -Pnative
 # Run with debug logging
 export AI_LOG_LEVEL=DEBUG
 ./target/ai-commit
+
+# Run tests
+mvn test
 ```
 
 ## FAQ
@@ -360,15 +523,24 @@ A: Honestly, it's your choice. For instance, I use OpenRouter mainly since you c
 **Q: Does this send my code to AI providers?**  
 A: It sends the git diff (changes only), not your entire codebase. Use Ollama for fully local processing with zero external API calls.
 
-**Q: Can I edit the message before committing?**  
-A: Not yet - it auto-commits immediately. Use `git commit --amend` to edit afterward. Interactive mode is planned for v1.1.0.
+**Q: When should I use auto-commit vs interactive mode?**  
+A: Use **auto-commit** for rapid development when you trust the AI (small, frequent commits). Use **interactive mode** when you want to review messages carefully (large changes, important commits).
+
+**Q: What happens if AI generation fails with auto-commit enabled?**  
+A: Nothing is committed. Auto-commit only proceeds if the AI successfully generates a valid message. Your changes remain staged.
+
+**Q: Can I edit the message with auto-commit enabled?**  
+A: No. Auto-commit skips all prompts. Disable it first: `ai-commit config --auto-commit off`
+
+**Q: Does auto-push require auto-commit?**  
+A: Yes. Auto-push only works when auto-commit is also enabled, since you need both for a fully automated workflow.
 
 **Q: How much does it cost?**  
 A: Depends on your provider:
 - OpenAI gpt-4o-mini: ~$0.0001-0.001 per commit
 - DeepSeek: ~$0.00001 per commit
 - Ollama: $0 (free, local)
-- OpenRouter: Varies by model
+- OpenRouter: Varies by model (many free options)
 
 **Q: Why is the binary 99MB?**  
 A: It includes 5 AI provider SDKs and the GraalVM runtime for instant startup. Future versions may offer slim builds with only the providers you need.
@@ -377,7 +549,10 @@ A: It includes 5 AI provider SDKs and the GraalVM runtime for instant startup. F
 A: Yes, it analyzes all staged changes regardless of repo structure.
 
 **Q: Can I use this in CI/CD?**  
-A: Yes! Set environment variables and run in automated workflows. Great for generating commit messages from automated tools.
+A: Yes! Set environment variables and enable auto-commit for fully automated commit message generation in pipelines.
+
+**Q: Can I export my settings?**  
+A: Not directly, but they're stored in standard OS locations. You can back up those files manually.
 
 ## Contributing
 
@@ -407,4 +582,4 @@ Contributions welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 ---
 
-**Built because I wanted to use OpenRouter and DeepSeek from anywhere, not just IntelliJ. If it helps you too, give it a star 🤗**
+**Built because I wanted to use OpenRouter and DeepSeek from anywhere, not just IntelliJ. Now with auto-commit and auto-push for lightning-fast workflows. If it helps you too, give it a star 🤗**

@@ -1,5 +1,6 @@
 package io.github.kxng0109.service;
 
+import io.github.kxng0109.config.UserPreferences;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ai.chat.messages.SystemMessage;
@@ -19,8 +20,9 @@ import java.util.List;
  * <p>
  * This service integrates with a Git management system and an AI model to improve the quality
  * of commit messages by suggesting meaningful and concise messages based on staged changes.
- * It allows users to review, regenerate, edit, or confirm commit messages before recording
- * changes in the repository.
+ * It supports both interactive and automated workflows, allowing users to review, regenerate,
+ * edit, or confirm commit messages before recording changes in the repository, or to automatically
+ * commit and push changes based on user preferences.
  * </p>
  *
  * <p>
@@ -31,7 +33,7 @@ import java.util.List;
  *   <li>Interactive console-based prompts for reviewing and editing commit messages.</li>
  * </ul>
  * </p>
- *
+ * <p>
  * Fields:
  * <ul>
  *   <li>{@code SYSTEM_PROMPT}: A string constant used internally for system-specific operations.</li>
@@ -40,11 +42,14 @@ import java.util.List;
  *   <li>{@code chatModel}: Handles AI-driven commit message generation.</li>
  *   <li>{@code reader}: Manages user input for interactive operations through the console.</li>
  * </ul>
- *
+ * <p>
  * Primary Methods:
  * <ul>
  *   <li>{@link #generateAndCommit()}: Automatically generates commit messages based on staged changes and
- *       commits them with user approval.</li>
+ *       commits them with user approval or automatically based on preferences.</li>
+ *   <li>{@link #handleAutoCommit(String, boolean)}: Handles automated commit workflow without user interaction.</li>
+ *   <li>{@link #handleInteractiveCommit(String, boolean)}: Manages interactive commit workflow with user prompts.</li>
+ *   <li>{@link #handleAutoPush(boolean)}: Handles automatic pushing of changes to remote repository if enabled.</li>
  *   <li>{@link #promptUser()}: Provides an interactive prompt for user action during commit operations
  *       (e.g., accept, regenerate, edit).</li>
  *   <li>{@link #editCommitMessage(String)}: Allows customization of AI-generated commit messages through user input.</li>
@@ -56,7 +61,8 @@ import java.util.List;
  * <h3>Usage:</h3>
  * A {@code CommitService} instance must be instantiated with dependencies including {@link GitService},
  * {@link ChatModel}, and a {@link BufferedReader}. Once created, the {@code generateAndCommit()} method can
- * be invoked to initiate the commit process.
+ * be invoked to initiate the commit process, which will follow either an automated or interactive workflow
+ * based on user preferences.
  */
 public class CommitService {
 
@@ -122,8 +128,8 @@ public class CommitService {
      * </p>
      *
      * @param gitService the {@link GitService} instance responsible for managing Git-related operations
-     * @param chatModel the {@link ChatModel} instance used for AI-generated commit message enhancements
-     * @param reader the {@link BufferedReader} instance for reading user input during interactions
+     * @param chatModel  the {@link ChatModel} instance used for AI-generated commit message enhancements
+     * @param reader     the {@link BufferedReader} instance for reading user input during interactions
      */
     public CommitService(GitService gitService, ChatModel chatModel, BufferedReader reader) {
         this.gitService = gitService;
@@ -141,7 +147,7 @@ public class CommitService {
      * </p>
      *
      * @param gitService the {@link GitService} instance responsible for managing Git operations
-     * @param chatModel the {@link ChatModel} instance enabling AI-driven enhancements
+     * @param chatModel  the {@link ChatModel} instance enabling AI-driven enhancements
      */
     public CommitService(GitService gitService, ChatModel chatModel) {
         this.gitService = gitService;
@@ -156,10 +162,13 @@ public class CommitService {
      * <ul>
      *   <li>Checks whether there are staged changes in the Git repository and throws an exception if none are found.</li>
      *   <li>Generates an AI-driven commit message based on the staged diff.</li>
-     *   <li>Displays the generated message and prompts the user for an action (accept, regenerate, edit, or cancel).</li>
+     *   <li>If auto-commit is enabled, automatically commits the changes without user interaction.</li>
+     *   <li>If auto-commit is disabled, displays the generated message and prompts the user for an action (accept, regenerate, edit, or cancel).</li>
      *   <li>Processes user input to either commit the changes, regenerate, edit the message, or abort the commit process.</li>
+     *   <li>If auto-push is enabled, automatically pushes changes to the remote repository after a successful commit.</li>
      * </ul>
-     * The commit process is only completed when the user confirms the commit or provides an edited commit message.
+     * The commit process is only completed when the user confirms the commit, provides an edited commit message,
+     * or when auto-commit successfully completes.
      * </p>
      *
      * @throws IllegalStateException if no staged changes are found in the repository.
@@ -171,11 +180,81 @@ public class CommitService {
         }
 
         String diff = gitService.getStagedDiff();
+        boolean autoCommit = UserPreferences.isAutoCommitEnabled();
+        boolean autoPush = UserPreferences.isAutoPushEnabled();
+
+        if (autoCommit) {
+            log.info("Auto-commit is enabled. Generating commit message.");
+            handleAutoCommit(diff, autoPush);
+        } else {
+            handleInteractiveCommit(diff, autoPush);
+        }
+    }
+
+    /**
+     * Handles the process of automatically generating, committing, and optionally pushing changes based on a provided diff.
+     * <p>
+     * This method performs the following operations:
+     * <ul>
+     *   <li>Generates an AI-driven commit message using the given diff.</li>
+     *   <li>Commits changes to the Git repository with the generated message.</li>
+     *   <li>Optionally pushes the changes to the remote repository if auto-push is enabled.</li>
+     *   <li>Logs success or failure of each step in the process.</li>
+     * </ul>
+     * In the event of a failure during message generation or commit, an appropriate error is logged
+     * and the exception is rethrown to ensure proper handling by the caller.
+     * </p>
+     *
+     * @param diff     a string representation of the changes (diff) used to generate the commit message.
+     * @param autoPush a boolean flag indicating whether changes should be pushed automatically
+     *                 to the remote repository after committing. If {@code true}, auto-push is enabled.
+     */
+    private void handleAutoCommit(String diff, boolean autoPush) {
+        try {
+            log.info("Generating commit message with AI...");
+            String commitMessage = generateMessage(diff);
+            displayMessage(commitMessage);
+
+            System.out.println("\nAuto-committing...");
+
+            String output = gitService.commit(commitMessage);
+            displayGitOutput(output);
+            log.info("Committed changes successfully.");
+
+            handleAutoPush(autoPush);
+        } catch (RuntimeException e) {
+            System.err.println("\nFailed to generate commit message: " + e.getMessage());
+            System.err.println("Auto-commit aborted. No changes were committed.");
+            log.error("Auto-commit failed: {}", e.getMessage(), e);
+            throw e;
+        }
+    }
+
+    /**
+     * Handles the interactive commit process, allowing the user to review, regenerate,
+     * edit, or cancel the commit message before committing changes.
+     * <p>
+     * This method performs the following functionalities:
+     * <ul>
+     *   <li>Generates an initial commit message based on the provided diff.</li>
+     *   <li>Prompts the user to accept the message, regenerate it, edit it, or cancel the commit.</li>
+     *   <li>Commits the changes if the user accepts or edits the commit message.</li>
+     *   <li>Handles optional automatic pushing of changes upon successful commit if the autoPush flag is enabled.</li>
+     * </ul>
+     * The process continues to loop until the user confirms the commit or chooses to cancel.
+     * </p>
+     *
+     * @param diff     the string representation of the diff used for generating the initial commit message.
+     * @param autoPush a boolean value indicating whether to automatically push changes
+     *                 to the remote repository after a successful commit. If {@code true},
+     *                 automatic push is attempted; otherwise, it is skipped.
+     */
+    private void handleInteractiveCommit(String diff, boolean autoPush) {
         String commitMessage = null;
         boolean isCommitted = false;
 
-        while(!isCommitted) {
-            if(commitMessage == null) {
+        while (!isCommitted) {
+            if (commitMessage == null) {
                 log.info("Generating commit message with AI...");
                 commitMessage = generateMessage(diff);
             }
@@ -192,6 +271,8 @@ public class CommitService {
                     displayGitOutput(output);
                     log.info("Committed changes successfully.");
                     isCommitted = true;
+
+                    handleAutoPush(autoPush);
                     break;
 
                 case "r":
@@ -207,12 +288,14 @@ public class CommitService {
                         break;
                     }
 
-                    if(!commitMessage.isEmpty()) {
+                    if (!commitMessage.isEmpty()) {
                         log.info("Using edited message as commit message...");
                         String editOutput = gitService.commit(commitMessage);
                         displayGitOutput(editOutput);
                         log.info("Committed changes successfully.");
                         isCommitted = true;
+
+                        handleAutoPush(autoPush);
                     }
                     break;
 
@@ -225,7 +308,37 @@ public class CommitService {
                 default:
                     System.out.println("Invalid choice. Please try again.");
             }
+        }
+    }
 
+    /**
+     * Handles the process of automatically pushing changes to the remote Git repository
+     * based on the provided autoPush flag.
+     * <p>
+     * When {@code autoPush} is {@code true}, the method attempts to push changes using the
+     * {@code gitService.push()} method. The output of the push operation is displayed via the
+     * {@code displayGitOutput} method. If the push operation fails, an error message is logged and printed.
+     * When {@code autoPush} is {@code false}, no action is taken, and a debug log entry is generated.
+     * </p>
+     *
+     * @param autoPush a boolean flag indicating whether to enable or disable automatic pushing of changes.
+     *                 If {@code true}, changes are pushed to the remote repository; otherwise, no action is performed.
+     */
+    private void handleAutoPush(boolean autoPush) {
+        if (autoPush) {
+            log.debug("Auto-push enabled.");
+            System.out.println("\nAuto-pushing...");
+            try {
+                String pushOutput = gitService.push();
+                displayGitOutput(pushOutput);
+                log.info("Pushed changes successfully.");
+            } catch (RuntimeException e) {
+                System.err.println("\nFailed to push: " + e.getMessage());
+                System.err.println("Commit was successful, but push failed.");
+                log.error("Push failed: {}", e.getMessage(), e);
+            }
+        } else {
+            log.debug("Auto-push is disabled.");
         }
     }
 
@@ -245,9 +358,9 @@ public class CommitService {
         System.out.println("Commit with this message? (y)es / (r)egenerate / (e)dit / (c)ancel [y]: ");
         System.out.flush();
 
-        try{
+        try {
             String input = reader.readLine();
-            if(input == null || input.isBlank() || input.trim().isEmpty()) {
+            if (input == null || input.isBlank() || input.trim().isEmpty()) {
                 return "y";
             }
             return input.trim().toLowerCase();
@@ -279,7 +392,7 @@ public class CommitService {
         System.out.println("> ");
         System.out.flush();
 
-        try{
+        try {
             String newMessage = reader.readLine();
             if (newMessage == null || newMessage.trim().isEmpty()) {
                 System.out.println("Empty message. Using original commit message.");
@@ -323,7 +436,7 @@ public class CommitService {
         } catch (Exception e) {
             log.error("Failed to generate a commit message: {}", e.getMessage(), e);
 
-            if(e instanceof IllegalStateException) {
+            if (e instanceof IllegalStateException) {
                 throw new IllegalStateException("AI returned an empty commit message");
             }
 
