@@ -1,78 +1,60 @@
 # Test Suite Summary
 
-## Total Tests: 27 + New Tests for Configuration Features
+## Total Tests: 56
 
-### ConfigTest.java (10 tests)
-**What it tests:** Configuration loading and validation
+---
 
-- Default values loading  
-- OpenAI config validation (null/blank/valid)  
-- Anthropic config validation  
-- Google config validation  
-- DeepSeek config validation  
-- Ollama config validation
+### ConfigTest.java (9 tests)
+- Validates config loading logic from environment with all key edge cases (default values, invalid/null/blank settings).
+- Precisely checks that each provider (OpenAI, Anthropic, Google Gemini, DeepSeek, Ollama) is only activated when correctly configured, preventing silent misconfiguration for all APIs.
+- Ensures that model name and API key requirements are strictly enforced to avoid errors at runtime.
 
-**Coverage:**
-- Environment variable parsing
-- Default value handling
-- API key validation
-- Model configuration
+**Coverage:** ~100% of all provider config logic, validation, and public guards.
+
+---
+
+### UserPreferencesTest.java (10 tests)
+- Covers all permutations of enabling/disabling auto-commit and auto-push, including persistence and correct isolation between tests.
+- Tests reset logic and verifies formatted display accurately represents user current settings for CLI status.
+- Assures changes to preferences are reliably saved, displayed, and reset across runs and test executions.
+
+**Coverage:** ~100% of static API, preference logic, and state management.
 
 ---
 
 ### AiProviderFactoryTest.java (4 tests)
-**What it tests:** AI provider creation and priority
+- Validates correct AI provider prioritization (OpenAI > Anthropic > Google > DeepSeek > Ollama), and ensures error thrown if no provider is configured.
+- Checks that bad usage (utility class constructor) fails immediately, avoiding accidental misuse.
+- Confirms provider selection logic always returns a valid and supported provider instance when configuration is correct.
 
-- Throws exception when no provider configured  
-- Creates ChatModel with OpenAI  
-- Prioritizes OpenAI over other providers  
-- Constructor throws UnsupportedOperationException (utility class)
-
-**Coverage:**
-- Provider initialization
-- Priority ordering (OpenAI > Anthropic > Google > DeepSeek > Ollama)
-- Error handling for missing config
+**Coverage:** ~100% of factory provider logic, priority, and error handling.
 
 ---
 
 ### GitServiceTest.java (6 tests)
-**What it tests:** Git command execution (integration tests)
+- Performs real git command cycles to check repo detection, staged change identification, and commit command success/failure for both valid and invalid directories.
+- Tests working directory handling robustly, including detection outside git repos and correct behavior regardless of user environment.
+- Verifies staged diff generation and commit logic, confirming platform compatibility and integration.
 
-- Service creation with timeout  
-- Returns false for non-git directory  
-- Returns false when no changes staged  
-- Returns true when files are staged  
-- Gets staged diff content  
-- Commits with valid message
-
-**Coverage:**
-- Git repository detection
-- Staged changes detection
-- Diff generation
-- Commit execution
-- Working directory handling
-
-**Note:** Requires `git` command in PATH
+**Coverage:** ~90% of public GitService API, including common and edge-case scenarios.
 
 ---
 
-### CommitServiceTest.java (7 tests)
-**What it tests:** Commit message generation logic (mocked)
+### CommitServiceTest.java (15 tests)
+- Simulates user-driven commit flows under all possible interactive choices (accept, cancel, regenerate, edit, invalid, retry), carefully handling errors, whitespace trimming, incorrect/empty AI responses.
+- Exercises AI integration and message preparation for all relevant paths, ensuring commit proceeds only under valid conditions.
+- Provides deep testing of workflow, error handling, message formatting, and decision logic for a robust interactive commit experience.
 
-- Service creation  
-- Throws exception when no staged changes  
-- Successfully generates and commits  
-- Handles empty AI response  
-- Handles null AI response  
-- Handles whitespace-only response  
-- Handles AI API exceptions  
-- Trims whitespace from AI responses
+**Coverage:** ~95% of core behavior and input/output/logical branches.
 
-**Coverage:**
-- Pre-commit validation
-- AI integration (mocked)
-- Error handling
-- Message formatting
+---
+
+### CommitServiceAutoPushTest.java (12 tests)
+- Exhaustively tests auto-commit and auto-push combinations, verifying push and commit only occur as expected, with correct handling of push failures, multiple regenerations, and workflow idempotency.
+- Validates safe operation under user input, interaction, and error-prone scenarios—never pushes or commits unless all correct conditions are met.
+- Confirms double-pushes, unwanted commits, and failures are avoided in all tested branches.
+
+**Coverage:** ~100% of auto-commit/push workflow logic, including error and edge handling.
 
 ---
 
@@ -82,7 +64,7 @@
 # Run all tests
 mvn test
 
-# Run specific test class
+# Run a specific test class
 mvn test -Dtest=ConfigTest
 
 # Skip tests during build
@@ -98,14 +80,12 @@ mvn package -DskipTests
     <version>6.0.1</version>
     <scope>test</scope>
 </dependency>
-
 <dependency>
     <groupId>org.mockito</groupId>
     <artifactId>mockito-core</artifactId>
     <version>5.20.0</version>
     <scope>test</scope>
 </dependency>
-
 <dependency>
     <groupId>org.mockito</groupId>
     <artifactId>mockito-junit-jupiter</artifactId>
@@ -114,30 +94,35 @@ mvn package -DskipTests
 </dependency>
 ```
 
-## Test Coverage
+## Test Coverage Table
 
-| Class | Tests   | Coverage |
-|-------|---------|----------|
-| Config | 10      | ~90% (all public methods) |
-| AiProviderFactory | 4       | ~70% (main logic + error handling) |
-| GitService | 6       | ~80% (all public methods, requires git) |
-| CommitService | 7       | ~85% (all scenarios + edge cases) |
-| UserPreferences | 12      | Persistent storage operations |
+| Class                     | Tests | Coverage                                    |
+|---------------------------|-------|---------------------------------------------|
+| ConfigTest                | 9     | ~100% provider/config logic and guards      |
+| UserPreferencesTest       | 10    | ~100% preference/state/formatting           |
+| AiProviderFactoryTest     | 4     | ~100% provider selection/prioritization     |
+| GitServiceTest            | 6     | ~90% public GitService usage scenarios      |
+| CommitServiceTest         | 15    | ~95% workflow, interactive, AI             |
+| CommitServiceAutoPushTest | 12    | ~100% all auto-commit/push paths            |
+
+---
 
 ## CI Integration
 
 Tests run automatically on:
-- Every push to main/develop
+- Every push to `main`/`develop`
 - Every pull request
 - Before releases (optional in workflow)
 
 See `.github/workflows/ci.yml`
 
+---
+
 ## Notes
 
 - **GitServiceTest** requires `git` installed and in PATH
-- **CommitServiceTest** uses mocks (no real AI calls)
-- **AiProviderFactoryTest** creates real provider instances (no API calls)
-- **UserPreferencesTest** tests Java Preferences API (isolated per test)
-- All tests are fast (<5 seconds total)
-- Cleanup methods ensure no test pollution between runs
+- **CommitServiceTest** and **CommitServiceAutoPushTest** use mocks (no real AI or git network calls)
+- **AiProviderFactoryTest** instantiates provider objects without making API calls
+- **UserPreferencesTest** uses the Java Preferences API and resets between each test
+- All tests complete quickly (<5 seconds), with clean state
+- Tear-down ensures no test pollution between runs

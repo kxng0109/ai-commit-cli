@@ -56,7 +56,7 @@ So I built this. A standalone CLI that works everywhere, supports any OpenAI-com
 curl -fsSL https://raw.githubusercontent.com/kxng0109/ai-commit-cli/main/install.sh | bash
 ```
 
-**Windows (PowerShell as Administrator):**
+**Windows (PowerShell as Administrator not required):**
 ```powershell
 irm https://raw.githubusercontent.com/kxng0109/ai-commit-cli/main/install.ps1 | iex
 ```
@@ -246,13 +246,13 @@ ai-commit  # Commits automatically, no prompts
 Automatically push after committing:
 
 ```bash
-# One-time setup (requires auto-commit)
-ai-commit config --auto-commit on
+# One-time setup
 ai-commit config --auto-push on
 
 # Super fast workflow
 git add feature.js
-ai-commit  # Commits AND pushes instantly!
+ai-commit  # If auto-commit is enabled, it commits instantly AND pushes instantly!
+# Note: auto-push does not require auto-commit to work
 ```
 
 ## Examples
@@ -533,7 +533,7 @@ A: Nothing is committed. Auto-commit only proceeds if the AI successfully genera
 A: No. Auto-commit skips all prompts. Disable it first: `ai-commit config --auto-commit off`
 
 **Q: Does auto-push require auto-commit?**  
-A: Yes. Auto-push only works when auto-commit is also enabled, since you need both for a fully automated workflow.
+A: No. Auto-push can work without auto-commit being enabled. But if you need a fully automated workflow, you can enable it, just note that you won't be able to modify the commit message.
 
 **Q: How much does it cost?**  
 A: Depends on your provider:
