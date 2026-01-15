@@ -1,5 +1,7 @@
 # AI Commit CLI
 
+![img.png](img.png)
+
 > Generate conventional commit messages using AI. It supports OpenAI, Anthropic Claude, Google Gemini, DeepSeek, Ollama, and any OpenAI-compatible API.
 
 [![Release](https://img.shields.io/github/v/release/kxng0109/ai-commit-cli)](https://github.com/kxng0109/ai-commit-cli/releases)
