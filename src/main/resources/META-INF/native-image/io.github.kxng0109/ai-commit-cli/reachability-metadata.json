@@ -929,6 +929,14 @@
       "allPublicConstructors": true
     },
     {
+      "type": "sun.net.www.protocol.http.Handler",
+      "allDeclaredConstructors": true
+    },
+    {
+      "type": "sun.net.www.protocol.https.Handler",
+      "allDeclaredConstructors": true
+    },
+    {
       "type": "org.slf4j.spi.LocationAwareLogger"
     },
     {

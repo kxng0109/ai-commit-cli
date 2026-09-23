@@ -49,11 +49,14 @@ jobs:
         if: runner.os != 'Windows'
         run: |
           mv target/${{ matrix.artifact }} ai-commit-${{ matrix.platform }}
+          cp target/bom.json ai-commit-${{ matrix.platform }}.bom.json
           chmod +x ai-commit-${{ matrix.platform }}
 
       - name: Rename Artifact (Windows)
         if: runner.os == 'Windows'
-        run: Move-Item target/${{ matrix.artifact }} ai-commit-${{ matrix.platform }}.exe
+        run: |
+          Move-Item target/${{ matrix.artifact }} ai-commit-${{ matrix.platform }}.exe
+          Copy-Item target/bom.json ai-commit-${{ matrix.platform }}.bom.json
 
       - name: Generate SHA256 (Unix)
         if: runner.os != 'Windows'
@@ -80,6 +83,8 @@ jobs:
     if: startsWith(github.ref, 'refs/tags/v')
     permissions:
       contents: write
+      id-token: write
+      attestations: write
 
     steps:
       - name: Checkout
@@ -90,6 +95,11 @@ jobs:
         with:
           path: artifacts
           merge-multiple: true
+
+      - name: Attest Build Provenance
+        uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4.2.2
+        with:
+          subject-path: 'artifacts/**/*'
 
       - name: Display Structure
         run: ls -R artifacts || ls -R .

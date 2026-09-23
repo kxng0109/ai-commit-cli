@@ -53,7 +53,7 @@ So I built this. A standalone CLI that works everywhere, supports any OpenAI-com
 
 ### Option 1: One-Line Installer (Easiest)
 
-Installers verify the release SHA256 checksum before installing. Pin a version with `AI_COMMIT_VERSION=vX.Y.Z`, or verify without installing via `--verify-only`.
+Installers verify the release SHA256 checksum before installing. Pin a version with `AI_COMMIT_VERSION=vX.Y.Z`, or verify without installing via `--verify-only`. Every release also ships a CycloneDX SBOM (`ai-commit-<platform>.bom.json`) and keyless SLSA build-provenance attestations (check with `gh attestation verify <file> -R kxng0109/ai-commit-cli`).
 
 **Linux/macOS:**
 ```bash
