@@ -533,6 +533,9 @@ A: Honestly, it's your choice. For instance, I use OpenRouter mainly since you c
 **Q: Does this send my code to AI providers?**  
 A: It sends the git diff (changes only), not your entire codebase. Before sending, the diff is scanned locally: secrets (API keys, private keys, tokens, credentialed URLs), binary content, generated lockfiles, and diffs over 64KB are refused and never leave your machine. Provider base URLs must be https except for loopback hosts. Use Ollama for fully local processing with zero external API calls.
 
+**Q: How much memory does it use?**  
+A: The native binary caps its heap at 256MB (worst-case RSS stays well under 1GB, versus 80% of RAM uncapped). Override per run with `./ai-commit -Xmx1g` if you ever need more.
+
 **Q: When should I use auto-commit vs interactive mode?**  
 A: Use **auto-commit** for rapid development when you trust the AI (small, frequent commits). Use **interactive mode** when you want to review messages carefully (large changes, important commits).
 

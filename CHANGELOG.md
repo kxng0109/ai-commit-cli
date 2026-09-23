@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- Native binary caps heap at 256MB (`-R:MaxHeapSize=256m`, overridable per run with `-Xmx`); SBOM emits JSON only.
+
 ## [1.3.0] - 2026-09-23
 
 ### Breaking
