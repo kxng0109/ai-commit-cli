@@ -51,7 +51,6 @@ public class CommitServiceAutoPushTest {
         BufferedReader mockReader = new BufferedReader(new StringReader("y\n"));
         commitService = new CommitService(gitService, chatModel, mockReader);
 
-        when(gitService.hasStagedChanges()).thenReturn(true);
         when(gitService.getStagedDiff()).thenReturn("diff");
         when(gitService.commit(anyString())).thenReturn("success");
 
@@ -72,7 +71,6 @@ public class CommitServiceAutoPushTest {
         BufferedReader mockReader = new BufferedReader(new StringReader("y\n"));
         commitService = new CommitService(gitService, chatModel, mockReader);
 
-        when(gitService.hasStagedChanges()).thenReturn(true);
         when(gitService.getStagedDiff()).thenReturn("diff");
         when(gitService.commit(anyString())).thenReturn("success");
         when(gitService.push()).thenReturn("pushed");
@@ -94,7 +92,6 @@ public class CommitServiceAutoPushTest {
         BufferedReader mockReader = new BufferedReader(new StringReader("r\ny\n"));
         commitService = new CommitService(gitService, chatModel, mockReader);
 
-        when(gitService.hasStagedChanges()).thenReturn(true);
         when(gitService.getStagedDiff()).thenReturn("diff");
         when(gitService.commit(anyString())).thenReturn("success");
         when(gitService.push()).thenReturn("pushed");
@@ -120,7 +117,6 @@ public class CommitServiceAutoPushTest {
         BufferedReader mockReader = new BufferedReader(new StringReader("e\n" + editedMessage + "\n"));
         commitService = new CommitService(gitService, chatModel, mockReader);
 
-        when(gitService.hasStagedChanges()).thenReturn(true);
         when(gitService.getStagedDiff()).thenReturn("diff");
         when(gitService.commit(editedMessage)).thenReturn("success");
         when(gitService.push()).thenReturn("pushed");
@@ -142,7 +138,6 @@ public class CommitServiceAutoPushTest {
         BufferedReader mockReader = new BufferedReader(new StringReader("c\n"));
         commitService = new CommitService(gitService, chatModel, mockReader);
 
-        when(gitService.hasStagedChanges()).thenReturn(true);
         when(gitService.getStagedDiff()).thenReturn("diff");
 
         ChatResponse mockResponse = createMockChatResponse("feat: test");
@@ -162,7 +157,6 @@ public class CommitServiceAutoPushTest {
         BufferedReader mockReader = new BufferedReader(new StringReader("y\n"));
         commitService = new CommitService(gitService, chatModel, mockReader);
 
-        when(gitService.hasStagedChanges()).thenReturn(true);
         when(gitService.getStagedDiff()).thenReturn("diff");
         when(gitService.commit(anyString())).thenReturn("success");
         when(gitService.push()).thenThrow(new RuntimeException("Push failed"));
@@ -183,7 +177,6 @@ public class CommitServiceAutoPushTest {
 
         commitService = new CommitService(gitService, chatModel);
 
-        when(gitService.hasStagedChanges()).thenReturn(true);
         when(gitService.getStagedDiff()).thenReturn("diff");
         when(gitService.commit(anyString())).thenReturn("success");
 
@@ -203,7 +196,6 @@ public class CommitServiceAutoPushTest {
 
         commitService = new CommitService(gitService, chatModel);
 
-        when(gitService.hasStagedChanges()).thenReturn(true);
         when(gitService.getStagedDiff()).thenReturn("diff");
         when(gitService.commit(anyString())).thenReturn("success");
         when(gitService.push()).thenReturn("pushed");
@@ -224,7 +216,6 @@ public class CommitServiceAutoPushTest {
 
         commitService = new CommitService(gitService, chatModel);
 
-        when(gitService.hasStagedChanges()).thenReturn(true);
         when(gitService.getStagedDiff()).thenReturn("diff");
         when(gitService.commit(anyString())).thenReturn("success");
         when(gitService.push()).thenThrow(new RuntimeException("Push failed"));
@@ -245,7 +236,6 @@ public class CommitServiceAutoPushTest {
 
         commitService = new CommitService(gitService, chatModel);
 
-        when(gitService.hasStagedChanges()).thenReturn(true);
         when(gitService.getStagedDiff()).thenReturn("diff");
         when(chatModel.call(any(Prompt.class))).thenThrow(new RuntimeException("AI error"));
 
@@ -263,7 +253,6 @@ public class CommitServiceAutoPushTest {
         BufferedReader mockReader = new BufferedReader(new StringReader("e\n\n"));
         commitService = new CommitService(gitService, chatModel, mockReader);
 
-        when(gitService.hasStagedChanges()).thenReturn(true);
         when(gitService.getStagedDiff()).thenReturn("diff");
         when(gitService.commit("feat: original")).thenReturn("success");
         when(gitService.push()).thenReturn("pushed");
@@ -285,7 +274,6 @@ public class CommitServiceAutoPushTest {
         BufferedReader mockReader = new BufferedReader(new StringReader("r\nr\nr\ny\n"));
         commitService = new CommitService(gitService, chatModel, mockReader);
 
-        when(gitService.hasStagedChanges()).thenReturn(true);
         when(gitService.getStagedDiff()).thenReturn("diff");
         when(gitService.commit(anyString())).thenReturn("success");
         when(gitService.push()).thenReturn("pushed");

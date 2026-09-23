@@ -1,6 +1,7 @@
 package io.github.kxng0109.service;
 
 import com.google.genai.Client;
+import com.google.genai.types.HttpOptions;
 import io.github.kxng0109.config.Config;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,7 +20,11 @@ import org.springframework.ai.ollama.api.OllamaChatOptions;
 import org.springframework.ai.openai.OpenAiChatModel;
 import org.springframework.ai.openai.OpenAiChatOptions;
 import org.springframework.ai.openai.api.OpenAiApi;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.web.client.DefaultResponseErrorHandler;
+import org.springframework.web.client.RestClient;
+
+import java.time.Duration;
 
 /**
  * Factory class for creating instances of {@code ChatModel} based on configuration.
@@ -50,8 +55,31 @@ public class AiProviderFactory {
 
     private static final Logger log = LoggerFactory.getLogger(AiProviderFactory.class);
 
+    private static final Duration CONNECT_TIMEOUT = Duration.ofSeconds(10);
+    private static final Duration READ_TIMEOUT = Duration.ofSeconds(60);
+    private static final Duration OLLAMA_READ_TIMEOUT = Duration.ofSeconds(120);
+    private static final int GOOGLE_TIMEOUT_MILLIS = 60_000;
+    private static final int MAX_OUTPUT_TOKENS = 512;
+
     private AiProviderFactory() {
         throw new UnsupportedOperationException("Utility class");
+    }
+
+    /**
+     * Builds a {@code RestClient.Builder} with bounded connect and read timeouts.
+     * <p>
+     * Uses {@code SimpleClientHttpRequestFactory} so no extra HTTP client dependency is needed.
+     * </p>
+     *
+     * @param connect the connect timeout, must not be {@code null}
+     * @param read the read timeout, must not be {@code null}
+     * @return a configured builder
+     */
+    private static RestClient.Builder timedRestClient(Duration connect, Duration read) {
+        SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
+        factory.setConnectTimeout(connect);
+        factory.setReadTimeout(read);
+        return RestClient.builder().requestFactory(factory);
     }
 
     /**
@@ -139,15 +167,17 @@ public class AiProviderFactory {
      */
     private static ChatModel createOpenAiModel(Config config) {
         OpenAiApi api = OpenAiApi.builder()
-                                 .apiKey(config.openai().apiKey())
-                                 .baseUrl(config.openai().baseUrl())
-                                 .responseErrorHandler(new DefaultResponseErrorHandler())
-                                 .build();
+                                  .apiKey(config.openai().apiKey())
+                                  .baseUrl(config.openai().baseUrl())
+                                  .restClientBuilder(timedRestClient(CONNECT_TIMEOUT, READ_TIMEOUT))
+                                  .responseErrorHandler(new DefaultResponseErrorHandler())
+                                  .build();
 
         OpenAiChatOptions options = OpenAiChatOptions.builder()
-                                                     .model(config.openai().model())
-                                                     .temperature(config.temperature())
-                                                     .build();
+                                                      .model(config.openai().model())
+                                                      .temperature(config.temperature())
+                                                      .maxTokens(MAX_OUTPUT_TOKENS)
+                                                      .build();
 
         return OpenAiChatModel.builder()
                               .openAiApi(api)
@@ -165,14 +195,19 @@ public class AiProviderFactory {
      * @return a fully configured {@code ChatModel} for interacting with the Google Generative AI API
      */
     private static ChatModel createGoogleModel(Config config) {
+        HttpOptions httpOptions = HttpOptions.builder()
+                                             .timeout(GOOGLE_TIMEOUT_MILLIS)
+                                             .build();
         Client client = Client.builder()
-                              .apiKey(config.google().apiKey())
-                              .build();
+                               .apiKey(config.google().apiKey())
+                               .httpOptions(httpOptions)
+                               .build();
 
         GoogleGenAiChatOptions options = GoogleGenAiChatOptions.builder()
-                                                               .temperature(config.temperature())
-                                                               .model(config.google().model())
-                                                               .build();
+                                                                .temperature(config.temperature())
+                                                                .model(config.google().model())
+                                                                .maxOutputTokens(MAX_OUTPUT_TOKENS)
+                                                                .build();
 
         return GoogleGenAiChatModel.builder()
                                    .defaultOptions(options)
@@ -191,14 +226,16 @@ public class AiProviderFactory {
      */
     private static ChatModel createAnthropicModel(Config config) {
         AnthropicApi api = AnthropicApi.builder()
-                                       .apiKey(config.anthropic().apiKey())
-                                       .responseErrorHandler(new DefaultResponseErrorHandler())
-                                       .build();
+                                        .apiKey(config.anthropic().apiKey())
+                                        .restClientBuilder(timedRestClient(CONNECT_TIMEOUT, READ_TIMEOUT))
+                                        .responseErrorHandler(new DefaultResponseErrorHandler())
+                                        .build();
 
         AnthropicChatOptions options = AnthropicChatOptions.builder()
-                                                           .model(config.anthropic().model())
-                                                           .temperature(config.temperature())
-                                                           .build();
+                                                            .model(config.anthropic().model())
+                                                            .temperature(config.temperature())
+                                                            .maxTokens(MAX_OUTPUT_TOKENS)
+                                                            .build();
 
         return AnthropicChatModel.builder()
                                  .defaultOptions(options)
@@ -217,14 +254,16 @@ public class AiProviderFactory {
      */
     private static ChatModel createDeepseekModel(Config config) {
         DeepSeekApi api = DeepSeekApi.builder()
-                                     .apiKey(config.deepseek().apiKey())
-                                     .responseErrorHandler(new DefaultResponseErrorHandler())
-                                     .build();
+                                      .apiKey(config.deepseek().apiKey())
+                                      .restClientBuilder(timedRestClient(CONNECT_TIMEOUT, READ_TIMEOUT))
+                                      .responseErrorHandler(new DefaultResponseErrorHandler())
+                                      .build();
 
         DeepSeekChatOptions options = DeepSeekChatOptions.builder()
-                                                         .model("deepseek-chat")
-                                                         .temperature(config.temperature())
-                                                         .build();
+                                                          .model("deepseek-chat")
+                                                          .temperature(config.temperature())
+                                                          .maxTokens(MAX_OUTPUT_TOKENS)
+                                                          .build();
 
         return DeepSeekChatModel.builder()
                                 .deepSeekApi(api)
@@ -244,14 +283,16 @@ public class AiProviderFactory {
      */
     private static ChatModel createOllamaModel(Config config) {
         OllamaApi api = OllamaApi.builder()
-                                 .baseUrl(config.ollama().baseUrl())
-                                 .responseErrorHandler(new DefaultResponseErrorHandler())
-                                 .build();
+                                  .baseUrl(config.ollama().baseUrl())
+                                  .restClientBuilder(timedRestClient(CONNECT_TIMEOUT, OLLAMA_READ_TIMEOUT))
+                                  .responseErrorHandler(new DefaultResponseErrorHandler())
+                                  .build();
 
         OllamaChatOptions options = OllamaChatOptions.builder()
-                                                     .model(config.ollama().model())
-                                                     .temperature(config.temperature())
-                                                     .build();
+                                                      .model(config.ollama().model())
+                                                      .temperature(config.temperature())
+                                                      .numPredict(MAX_OUTPUT_TOKENS)
+                                                      .build();
 
         return OllamaChatModel.builder()
                               .ollamaApi(api)

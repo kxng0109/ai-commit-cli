@@ -53,6 +53,8 @@ So I built this. A standalone CLI that works everywhere, supports any OpenAI-com
 
 ### Option 1: One-Line Installer (Easiest)
 
+Installers verify the release SHA256 checksum before installing. Pin a version with `AI_COMMIT_VERSION=vX.Y.Z`, or verify without installing via `--verify-only`.
+
 **Linux/macOS:**
 ```bash
 curl -fsSL https://raw.githubusercontent.com/kxng0109/ai-commit-cli/main/install.sh | bash
@@ -70,6 +72,8 @@ Download the pre-built binary for your platform from [Releases](https://github.c
 **Linux:**
 ```bash
 curl -L https://github.com/kxng0109/ai-commit-cli/releases/latest/download/ai-commit-linux-amd64 -o ai-commit
+curl -L https://github.com/kxng0109/ai-commit-cli/releases/latest/download/ai-commit-linux-amd64.sha256 -o ai-commit-linux-amd64.sha256
+sha256sum -c ai-commit-linux-amd64.sha256
 chmod +x ai-commit
 sudo mv ai-commit /usr/local/bin/
 ai-commit --version
@@ -95,7 +99,7 @@ ai-commit --version
 
 **Requirements:**
 - GraalVM 25 (with native-image)
-- Apache Maven 3.9.11
+- Apache Maven 3.9.16
 - Java 25
 
 **Steps:**
@@ -103,7 +107,7 @@ ai-commit --version
 git clone https://github.com/kxng0109/ai-commit-cli.git
 cd ai-commit-cli
 
-mvn clean package -Pnative
+mvn clean verify
 
 # Binary location: target/ai-commit (or ai-commit.exe on Windows)
 sudo cp target/ai-commit /usr/local/bin/  # Linux/macOS
@@ -115,7 +119,7 @@ ai-commit --version
 **Development build (JAR, faster):**
 ```bash
 mvn clean package
-java -jar target/ai-commit-cli-1.0.0.jar --version
+java -jar target/ai-commit-cli-1.2.0.jar --version
 ```
 
 ## Quick Start
@@ -166,7 +170,8 @@ ai-commit
 | Variable | Default | Range |
 |----------|---------|-------|
 | `AI_TEMPERATURE` | 0.1 | 0.0 - 2.0 |
-| `AI_COMMAND_TIMEOUT` | 30 | 1 - 3600 seconds |
+| `AI_COMMAND_TIMEOUT` | 30 | 1 - 3600 seconds (`AI_TIMEOUT` still works as a deprecated alias) |
+| `AI_ALLOW_INSECURE_HTTP` | false | Set `true` only to allow plain-http AI endpoints for non-local hosts |
 | `AI_LOG_LEVEL` | WARN | ERROR, WARN, INFO, DEBUG |
 
 ### User Preferences (Persistent)
@@ -215,14 +220,17 @@ Implement Google OAuth2 integration with JWT token handling
 and secure session management.
 ────────────────────────────────────────────────────────────
 
-Commit with this message? (y)es / (r)egenerate / (e)dit / (c)ancel [y]:
+Commit with this message? (y)es / (r)egenerate / (e)dit / (c)ancel [c]:
 ```
 
+Fail-closed by design: empty input, end-of-stream, or a read error cancels
+the commit. Only an explicit `y`/`yes` commits.
+
 **Options:**
-- **`y` (yes)** - Commit with the AI-generated message (default, just press Enter)
+- **`y`/`yes`** - Commit with the AI-generated message (explicit confirmation required)
 - **`r` (regenerate)** - Generate a new message with different wording
-- **`e` (edit)** - Manually edit the message before committing
-- **`c` (cancel)** - Cancel and don't commit
+- **`e` (edit)** - Manually edit the message before committing (`c` at the edit prompt cancels)
+- **`c` (cancel)** - Cancel and don't commit (default, just press Enter)
 
 ### Auto-Commit Mode
 
@@ -501,17 +509,17 @@ ai-commit config --auto-commit on
 ```bash
 # Build JAR (fast iteration)
 mvn clean package
-java -jar target/ai-commit-cli-1.0.0.jar
+java -jar target/ai-commit-cli-1.2.0.jar
 
-# Build native binary
-mvn clean package -Pnative
+# Build native binary (GraalVM required; JaCoCo gate enforced via verify)
+mvn clean verify
 
 # Run with debug logging
 export AI_LOG_LEVEL=DEBUG
 ./target/ai-commit
 
-# Run tests
-mvn test
+# Run tests with the 90% line+branch coverage gate
+mvn verify -DskipNativeBuild=true
 ```
 
 ## FAQ
@@ -523,7 +531,7 @@ A: It's excellent for IntelliJ users, but it limits you to their provider select
 A: Honestly, it's your choice. For instance, I use OpenRouter mainly since you can get really good models for free and have access to a lot of models with just one API key. Then I use ollama (or LM Studio) just for testing. You can get professional grade models, but you're limited by your system's hardware.
 
 **Q: Does this send my code to AI providers?**  
-A: It sends the git diff (changes only), not your entire codebase. Use Ollama for fully local processing with zero external API calls.
+A: It sends the git diff (changes only), not your entire codebase. Before sending, the diff is scanned locally: secrets (API keys, private keys, tokens, credentialed URLs), binary content, generated lockfiles, and diffs over 64KB are refused and never leave your machine. Provider base URLs must be https except for loopback hosts. Use Ollama for fully local processing with zero external API calls.
 
 **Q: When should I use auto-commit vs interactive mode?**  
 A: Use **auto-commit** for rapid development when you trust the AI (small, frequent commits). Use **interactive mode** when you want to review messages carefully (large changes, important commits).
