@@ -27,6 +27,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Single staged-diff fetch per run; bounded process capture; release builds run `mvn clean verify` (tests + coverage gate, no skips).
 - Dependency hygiene: slf4j 2.0.20, JUnit 6.1.3, Mockito 5.23.0, maven-compiler 3.15.0, maven-shade 3.6.2, maven-surefire 3.5.6, native-maven-plugin 0.11.5.
 - GitHub Actions moved to Node 24 runtimes: checkout v5, cache v5, upload-artifact v6, download-artifact v7, gh-release v3 (setup-graalvm v1 already current).
+- Native image hardened: removed deprecated `--allow-incomplete-classpath`, unsafe ServiceLoader disable, stale logback/slf4j build-time init, broad resource globs, and deprecated URL-protocol flags (https handlers now in reachability metadata); default `-O2` for releases.
+- Supply chain: CycloneDX SBOM (`bom.json`) generated on every build and attached to releases; SLSA build provenance attested keylessly via GitHub OIDC.
 
 ### Technical
 - JaCoCo 0.8.15 enforces 90% line + branch coverage on `verify` (currently 96.2% line, 90.5% branch across 168 tests).

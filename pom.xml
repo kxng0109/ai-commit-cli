@@ -181,28 +181,10 @@
                     <imageName>ai-commit</imageName>
                     <mainClass>${main.class}</mainClass>
                     <buildArgs>
-                        <buildArg>-H:+UnlockExperimentalVMOptions</buildArg>
-                        <buildArg>-H:+RemoveUnusedSymbols</buildArg>
                         <buildArg>--no-fallback</buildArg>
-                        <buildArg>--enable-url-protocols=https,http</buildArg>
-                        <buildArg>--enable-https</buildArg>
                         <buildArg>-H:+ReportExceptionStackTraces</buildArg>
-
-                        <buildArg>-H:IncludeResources=.*\.properties$</buildArg>
-                        <buildArg>-H:IncludeResources=.*\.xml$</buildArg>
-                        <buildArg>-H:IncludeResources=.*\.json$</buildArg>
-                        <buildArg>-H:IncludeResources=META-INF/.*</buildArg>
-                        <buildArg>-H:IncludeResources=org/springframework/.*</buildArg>
-
-                        <buildArg>--initialize-at-build-time=org.slf4j,ch.qos.logback</buildArg>
                         <buildArg>--initialize-at-run-time=io.netty,reactor.netty</buildArg>
-
-                        <buildArg>-Ob</buildArg>
-                        <buildArg>--gc=serial</buildArg>
-                        <buildArg>-H:-UseServiceLoaderFeature</buildArg>
                         <buildArg>-march=compatibility</buildArg>
-
-                        <buildArg>--allow-incomplete-classpath</buildArg>
                     </buildArgs>
                 </configuration>
             </plugin>
@@ -259,6 +241,19 @@
                                 </rule>
                             </rules>
                         </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.cyclonedx</groupId>
+                <artifactId>cyclonedx-maven-plugin</artifactId>
+                <version>2.9.3</version>
+                <executions>
+                    <execution>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>makeAggregateBom</goal>
+                        </goals>
                     </execution>
                 </executions>
             </plugin>
