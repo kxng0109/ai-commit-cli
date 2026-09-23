@@ -25,7 +25,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup GraalVM
         uses: graalvm/setup-graalvm@v1
@@ -36,7 +36,7 @@ jobs:
           native-image-job-reports: 'true'
 
       - name: Cache Maven
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/.m2/repository
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
@@ -66,7 +66,7 @@ jobs:
           "$($hash.Hash.ToLower())  ai-commit-${{ matrix.platform }}.exe" | Out-File -Encoding ASCII ai-commit-${{ matrix.platform }}.exe.sha256
 
       - name: Upload Artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: ai-commit-${{ matrix.platform }}
           path: |
@@ -83,10 +83,10 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Download Artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           path: artifacts
           merge-multiple: true
@@ -95,7 +95,7 @@ jobs:
         run: ls -R artifacts || ls -R .
 
       - name: Create Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           files: |
             artifacts/**/*
