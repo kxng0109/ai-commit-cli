@@ -277,6 +277,60 @@ public record Config(
     }
 
     /**
+     * Returns a copy of this config with the model replaced for one provider.
+     * <p>
+     * Supported providers are {@code openai}, {@code anthropic}, {@code google},
+     * {@code ollama}, and {@code deepseek}. The DeepSeek provider uses a fixed
+     * model and rejects overrides.
+     * </p>
+     *
+     * @param provider the provider name (case-insensitive), must not be {@code null}
+     * @param model the replacement model, must not be blank
+     * @return a new config with the model replaced
+     * @throws IllegalArgumentException when the provider is unknown, blank, or fixed-model,
+     * or when the model is blank
+     */
+    public Config withModel(String provider, String model) {
+        if (provider == null || provider.isBlank()) {
+            throw new IllegalArgumentException(
+                    "Unknown provider ''. Supported: openai, anthropic, google, deepseek, ollama.");
+        }
+        if (model == null || model.isBlank()) {
+            throw new IllegalArgumentException("Model must not be blank.");
+        }
+        String name = provider.trim().toLowerCase(Locale.ROOT);
+        String trimmedModel = model.trim();
+        switch (name) {
+            case "openai":
+                return new Config(
+                        new OpenAiConfig(openai.apiKey(), openai.baseUrl(), trimmedModel),
+                        anthropic, google, deepseek, ollama, temperature, commandTimeoutSeconds);
+            case "anthropic":
+                return new Config(
+                        openai,
+                        new AnthropicConfig(anthropic.apiKey(), trimmedModel),
+                        google, deepseek, ollama, temperature, commandTimeoutSeconds);
+            case "google":
+                return new Config(
+                        openai, anthropic,
+                        new GoogleConfig(google.apiKey(), trimmedModel),
+                        deepseek, ollama, temperature, commandTimeoutSeconds);
+            case "ollama":
+                return new Config(
+                        openai, anthropic, google, deepseek,
+                        new OllamaConfig(trimmedModel, ollama.baseUrl()),
+                        temperature, commandTimeoutSeconds);
+            case "deepseek":
+                throw new IllegalArgumentException(
+                        "The deepseek provider uses a fixed model and does not accept --model.");
+            default:
+                throw new IllegalArgumentException(
+                        "Unknown provider '" + provider.trim()
+                                + "'. Supported: openai, anthropic, google, deepseek, ollama.");
+        }
+    }
+
+    /**
      * Represents the configuration settings for OpenAI.
      * This configuration includes the API key, base URL, and model name
      * required to interact with the OpenAI API.

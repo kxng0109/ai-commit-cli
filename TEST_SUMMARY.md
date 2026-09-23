@@ -1,8 +1,8 @@
 # Test Suite Summary
 
-## Total Tests: 168
+## Total Tests: 217
 
-JaCoCo gate on `verify`: 90% line + branch minimum (currently 96.2% line, 90.5% branch).
+JaCoCo gate on `verify`: 90% line + branch minimum (currently 95.8% line, 92.4% branch).
 
 ---
 
@@ -109,22 +109,29 @@ mvn clean verify
 | ConfigTest                | 9     | ~100% provider/config logic and guards      |
 | ConfigPolicyTest          | 10    | URL policy, loopback, truthy, timeout range |
 | ConfigParsingTest         | 10    | temperature/timeout parsing, isConfigured   |
+| ConfigWithModelTest       | 6     | per-run model overrides                     |
 | UserPreferencesTest       | 10    | ~100% preference/state/formatting           |
 | AiCommitCliTest           | 4     | toggle parsing, error description           |
 | AiCommitCliRunTest        | 18    | run() paths: version/help/config/commit-flow|
+| AiCommitCliArgsTest       | 11    | flag parsing, fail-closed rejects           |
+| AiCommitCliDispatchTest   | 11    | flow dispatch, overrides, shells            |
 | AiProviderFactoryTest     | 4     | ~100% provider selection/prioritization     |
 | AiProviderFactoryReliabilityTest | 6 | per-provider type, output caps, priority |
+| AiProviderFactorySelectionTest | 6 | forced selection, priority, rejects      |
 | GitServiceTest            | 6     | ~90% public GitService usage scenarios      |
 | GitServiceEnvTest         | 2     | secret env scrubbing                        |
 | GitServiceValidationTest  | 7     | timeout/dir/message validation              |
 | GitServiceWorkingDirTest  | 6     | directory resolution matrix                 |
 | GitServiceProcessTest     | 8     | timeout/interrupt/truncation/process errors |
+| GitServiceWriteTest       | 3     | stage tracked, amend                        |
 | SecretScannerTest         | 17    | secret patterns, caps, summary hygiene      |
 | CommitServiceTest         | 15    | ~95% workflow, interactive, AI             |
 | CommitServiceAutoPushTest | 12    | ~100% all auto-commit/push paths            |
 | CommitServiceGuardTest    | 9     | fail-closed consent, diff policy            |
 | CommitServiceReliabilityTest | 9  | AI error mapping, null stages, interrupt    |
 | CommitServiceEdgeTest     | 6     | null diff/output, 5xx, edit edges           |
+| CommitServiceFlowTest     | 5     | preview, forced auto, amend flows           |
+| CompletionTest            | 7     | bundled scripts, shell dispatch             |
 
 ---
 

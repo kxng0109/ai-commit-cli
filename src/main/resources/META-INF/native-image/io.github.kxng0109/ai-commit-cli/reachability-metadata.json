@@ -2642,6 +2642,18 @@
       "glob": "version.properties"
     },
     {
+      "glob": "completions/ai-commit.bash"
+    },
+    {
+      "glob": "completions/ai-commit.zsh"
+    },
+    {
+      "glob": "completions/ai-commit.fish"
+    },
+    {
+      "glob": "completions/ai-commit.ps1"
+    },
+    {
       "module": "java.base",
       "glob": "jdk/internal/icu/impl/data/icudt76b/nfkc.nrm"
     },
