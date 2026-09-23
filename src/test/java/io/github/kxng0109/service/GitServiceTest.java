@@ -35,15 +35,14 @@ public class GitServiceTest {
     }
 
     @Test
-    void hasStagedChanges_inNonGitDirectory_shouldReturnFalse() throws IOException {
+    void hasStagedChanges_inNonGitDirectory_shouldThrow() throws IOException {
         Path nonGitDir = Files.createTempDirectory("non-git-test");
 
         try {
             gitService = new GitService(5, nonGitDir.toString());
 
-            boolean result = gitService.hasStagedChanges();
-
-            assertFalse(result, "Should return false for non-git directory");
+            assertThrows(RuntimeException.class, () -> gitService.hasStagedChanges(),
+                    "Fatal git failures must propagate, not masquerade as no changes");
         } finally {
             deleteDirectoryWithRetry(nonGitDir);
         }

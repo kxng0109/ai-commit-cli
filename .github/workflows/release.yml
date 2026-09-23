@@ -43,7 +43,7 @@ jobs:
           restore-keys: ${{ runner.os }}-maven-
 
       - name: Build Native Binary
-        run: mvn clean package -Pnative -DskipTests
+        run: mvn clean verify
 
       - name: Rename Artifact (Unix)
         if: runner.os != 'Windows'
@@ -94,11 +94,6 @@ jobs:
       - name: Display Structure
         run: ls -R artifacts || ls -R .
 
-      - name: Prepare Release Files
-        run: |
-          mkdir -p release-files
-          find . -name "ai-commit-*" -type f -exec cp {} release-files/ \;
-
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
@@ -113,6 +108,8 @@ jobs:
             **Linux:**
             ```bash
             curl -L https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/ai-commit-linux-amd64 -o ai-commit
+            curl -L https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/ai-commit-linux-amd64.sha256 -o ai-commit-linux-amd64.sha256
+            sha256sum -c ai-commit-linux-amd64.sha256
             chmod +x ai-commit
             sudo mv ai-commit /usr/local/bin/
             ```
@@ -120,6 +117,8 @@ jobs:
             **macOS:**
             ```bash
             curl -L https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/ai-commit-macos-amd64 -o ai-commit
+            curl -L https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/ai-commit-macos-amd64.sha256 -o ai-commit-macos-amd64.sha256
+            shasum -a 256 -c ai-commit-macos-amd64.sha256
             chmod +x ai-commit
             sudo mv ai-commit /usr/local/bin/
             ```

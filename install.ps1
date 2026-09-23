@@ -1,33 +1,71 @@
 # AI Commit CLI Installer for Windows
 # Usage: irm https://raw.githubusercontent.com/kxng0109/ai-commit-cli/main/install.ps1 | iex
+# Pinned version: $env:AI_COMMIT_VERSION = "v1.2.0"; irm ... | iex
+
+param(
+    [string]$Version = $env:AI_COMMIT_VERSION,
+    [switch]$VerifyOnly
+)
 
 $ErrorActionPreference = "Stop"
+
+[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
 $REPO = "kxng0109/ai-commit-cli"
 $INSTALL_DIR = "$env:LOCALAPPDATA\Programs\ai-commit"
 
 Write-Host "==> Installing AI Commit CLI..." -ForegroundColor Cyan
 
-Write-Host "==> Fetching latest version..." -ForegroundColor Cyan
-try {
-    $response = Invoke-RestMethod -Uri "https://api.github.com/repos/$REPO/releases/latest"
-    $VERSION = $response.tag_name
-    Write-Host "==> Latest version: $VERSION" -ForegroundColor Green
-} catch {
-    Write-Host "Error: Failed to fetch latest version - $_" -ForegroundColor Red
+if ([string]::IsNullOrWhiteSpace($Version)) {
+    Write-Host "==> Fetching latest version..." -ForegroundColor Cyan
+    try {
+        $response = Invoke-RestMethod -Uri "https://api.github.com/repos/$REPO/releases/latest" -UseBasicParsing
+        $Version = $response.tag_name
+    } catch {
+        Write-Host "Error: Failed to fetch latest version - $_" -ForegroundColor Red
+        exit 1
+    }
+}
+if ($Version -notmatch '^v\d+\.\d+\.\d+$') {
+    Write-Host "Error: Refusing to use unexpected version value: $Version" -ForegroundColor Red
     exit 1
 }
+Write-Host "==> Version: $Version" -ForegroundColor Green
 
-$URL = "https://github.com/$REPO/releases/download/$VERSION/ai-commit-windows-amd64.exe"
-$TMP = "$env:TEMP\ai-commit-$PID.exe"
+$ASSET = "ai-commit-windows-amd64.exe"
+$URL = "https://github.com/$REPO/releases/download/$Version/$ASSET"
+$SHA_URL = "$URL.sha256"
+$TMP = Join-Path $env:TEMP ("ai-commit-" + [IO.Path]::GetRandomFileName() + ".exe")
+$TMP_SHA = "$TMP.sha256"
 
 Write-Host "==> Downloading..." -ForegroundColor Cyan
 try {
-    Invoke-WebRequest -Uri $URL -OutFile $TMP
+    Invoke-WebRequest -Uri $URL -OutFile $TMP -UseBasicParsing
+    Invoke-WebRequest -Uri $SHA_URL -OutFile $TMP_SHA -UseBasicParsing
 } catch {
     Write-Host "Error: Download failed - $_" -ForegroundColor Red
     exit 1
 }
+
+Write-Host "==> Verifying checksum..." -ForegroundColor Cyan
+$expected = ((Get-Content -LiteralPath $TMP_SHA -TotalCount 1).Split(' ')[0]).Trim().ToLower()
+$actual = (Get-FileHash -LiteralPath $TMP -Algorithm SHA256).Hash.ToLower()
+if ([string]::IsNullOrWhiteSpace($expected)) {
+    Write-Host "Error: Empty checksum file" -ForegroundColor Red
+    exit 1
+}
+if ($actual -ne $expected) {
+    Write-Host "Error: Checksum mismatch (download may be tampered)" -ForegroundColor Red
+    exit 1
+}
+Write-Host "==> Checksum OK" -ForegroundColor Green
+
+if ($VerifyOnly) {
+    Remove-Item -LiteralPath $TMP -ErrorAction SilentlyContinue
+    Write-Host "==> Verify-only mode: checksum valid, nothing installed" -ForegroundColor Green
+    exit 0
+}
+Remove-Item -LiteralPath $TMP_SHA -ErrorAction SilentlyContinue
 
 if (-not (Test-Path $INSTALL_DIR)) {
     New-Item -ItemType Directory -Path $INSTALL_DIR -Force | Out-Null

@@ -57,3 +57,6 @@ ai-commit-*-amd64*
 # GraalVM
 graal_isolate.h
 graal_isolate_dynamic.h
+
+# Audit dossier (local-only, never push)
+findings/

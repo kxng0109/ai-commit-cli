@@ -6,12 +6,17 @@ import org.slf4j.LoggerFactory;
 import org.springframework.ai.chat.messages.SystemMessage;
 import org.springframework.ai.chat.messages.UserMessage;
 import org.springframework.ai.chat.model.ChatModel;
+import org.springframework.ai.chat.model.ChatResponse;
+import org.springframework.ai.chat.model.Generation;
 import org.springframework.ai.chat.prompt.Prompt;
+import org.springframework.web.client.RestClientResponseException;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.ConnectException;
+import java.net.SocketTimeoutException;
+import java.net.UnknownHostException;
 import java.util.List;
 
 /**
@@ -175,11 +180,17 @@ public class CommitService {
      */
     public void generateAndCommit() {
         log.info("Checking for staged changes...");
-        if (!gitService.hasStagedChanges()) {
+        String diff;
+        try {
+            diff = gitService.getStagedDiff();
+        } catch (RuntimeException e) {
+            throw new IllegalStateException("No staged changes found! Use the 'git add' to stage changes first.", e);
+        }
+        if (diff == null || diff.isBlank()) {
             throw new IllegalStateException("No staged changes found! Use the 'git add' to stage changes first.");
         }
 
-        String diff = gitService.getStagedDiff();
+        guardDiff(diff);
         boolean autoCommit = UserPreferences.isAutoCommitEnabled();
         boolean autoPush = UserPreferences.isAutoPushEnabled();
 
@@ -188,6 +199,26 @@ public class CommitService {
             handleAutoCommit(diff, autoPush);
         } else {
             handleInteractiveCommit(diff, autoPush);
+        }
+    }
+
+    /**
+     * Guards a staged diff against oversize, binary, generated-file, and secret content.
+     * <p>
+     * The check runs before any AI call so blocked content never leaves the machine.
+     * Findings are logged as rule identifiers with lengths and fingerprints only.
+     * </p>
+     *
+     * @param diff the staged diff to guard, must not be {@code null}
+     * @throws IllegalStateException when the diff must not be sent to AI
+     */
+    private void guardDiff(String diff) {
+        List<SecretScanner.Finding> findings = SecretScanner.scan(diff);
+        if (!findings.isEmpty()) {
+            String summary = SecretScanner.summarize(findings);
+            log.warn("Diff blocked from AI submission: {}", summary);
+            throw new IllegalStateException("Refusing to send diff to AI (" + summary + "). Remove secrets, "
+                    + "generated files, or reduce staged changes («git diff --staged --stat») and retry.");
         }
     }
 
@@ -223,8 +254,8 @@ public class CommitService {
 
             handleAutoPush(autoPush);
         } catch (RuntimeException e) {
-            System.err.println("\nFailed to generate commit message: " + e.getMessage());
-            System.err.println("Auto-commit aborted. No changes were committed.");
+            System.err.println("\nAuto-commit failed: " + e.getMessage());
+            System.err.println("Auto-commit aborted.");
             log.error("Auto-commit failed: {}", e.getMessage(), e);
             throw e;
         }
@@ -264,7 +295,7 @@ public class CommitService {
             String choice = promptUser();
 
             switch (choice) {
-                case "y":
+                case "y", "yes":
                     log.info("Committing changes...");
                     String output = gitService.commit(commitMessage);
 
@@ -275,12 +306,12 @@ public class CommitService {
                     handleAutoPush(autoPush);
                     break;
 
-                case "r":
+                case "r", "regenerate":
                     log.info("\nRegenerating commit message...");
                     commitMessage = null;
                     break;
 
-                case "e":
+                case "e", "edit":
                     commitMessage = editCommitMessage(commitMessage);
                     if (commitMessage == null) {
                         System.out.println("Edit cancelled.");
@@ -288,7 +319,7 @@ public class CommitService {
                         break;
                     }
 
-                    if (!commitMessage.isEmpty()) {
+                    if (!commitMessage.isBlank()) {
                         log.info("Using edited message as commit message...");
                         String editOutput = gitService.commit(commitMessage);
                         displayGitOutput(editOutput);
@@ -299,7 +330,7 @@ public class CommitService {
                     }
                     break;
 
-                case "c":
+                case "c", "cancel":
                     System.out.println();
                     System.out.println("Cancelling commit...");
                     isCommitted = true; //Just to break out of the while loop
@@ -346,40 +377,45 @@ public class CommitService {
      * Prompts the user for input regarding the next action to take with the provided commit message.
      * <p>
      * This method displays a set of options to the user: confirm the commit message (yes), regenerate,
-     * edit, or cancel. If the user provides no input or an invalid input, the default action is
-     * considered as "yes". In case of an error during input reading, the method also defaults to "yes".
+     * edit, or cancel. The method is fail-closed: empty input, end-of-stream, or read errors cancel
+     * the commit instead of committing unapproved text.
      * </p>
      *
-     * @return the user's choice as a lowercase string: "y", "r", "e", or "c". Defaults to "y" if no input
-     * is provided or an IOException occurs.
+     * @return the user's choice as a lowercase string such as "y", "yes", "r", "e", or "c".
+     * Defaults to "c" when input is empty or an IOException occurs.
      */
     private String promptUser() {
         System.out.println();
-        System.out.println("Commit with this message? (y)es / (r)egenerate / (e)dit / (c)ancel [y]: ");
+        System.out.println("Commit with this message? (y)es / (r)egenerate / (e)dit / (c)ancel [c]: ");
         System.out.flush();
 
         try {
             String input = reader.readLine();
-            if (input == null || input.isBlank() || input.trim().isEmpty()) {
-                return "y";
+            if (input == null) {
+                return "c";
             }
-            return input.trim().toLowerCase();
+            String normalized = input.trim().toLowerCase();
+            if (normalized.isEmpty()) {
+                return "c";
+            }
+            return normalized;
         } catch (IOException e) {
             log.error("Failed to read user input: {}", e.getMessage());
-            return "y";
+            return "c";
         }
     }
 
     /**
      * Allows the user to edit a commit message interactively through the console.
      * <p>
-     * This method displays the current commit message to the user and prompts them to either enter
-     * a new message or press Enter to keep the original message unchanged. If an input error occurs
-     * or the user does not provide a valid new message, the original message is returned by default.
+     * This method displays the current commit message to the user and prompts them to enter
+     * a new message, press Enter to keep the original message, or type {@code c} to cancel.
+     * End-of-stream and read errors cancel the edit and return {@code null} so the caller
+     * can abort instead of committing unapproved text.
      * </p>
      *
      * @param originalMessage the original commit message to be potentially modified by the user
-     * @return the new commit message provided by the user, or the original message if no valid input is given
+     * @return the new commit message, the original message when kept, or {@code null} when cancelled
      */
     private String editCommitMessage(String originalMessage) {
         System.out.println();
@@ -388,22 +424,31 @@ public class CommitService {
         System.out.println(originalMessage);
         System.out.println("=".repeat(60));
         System.out.println();
-        System.out.println("Enter new commit message or press Enter to keep current one:");
+        System.out.println("Enter new commit message, Enter to keep current one, or c to cancel:");
         System.out.println("> ");
         System.out.flush();
 
         try {
             String newMessage = reader.readLine();
-            if (newMessage == null || newMessage.trim().isEmpty()) {
+            if (newMessage == null) {
+                System.out.println("Edit cancelled.");
+                return null;
+            }
+            String trimmed = newMessage.trim();
+            if (trimmed.equalsIgnoreCase("c") || trimmed.equalsIgnoreCase("cancel")) {
+                System.out.println("Edit cancelled.");
+                return null;
+            }
+            if (trimmed.isEmpty()) {
                 System.out.println("Empty message. Using original commit message.");
                 return originalMessage;
             }
 
-            return newMessage.trim();
+            return trimmed;
         } catch (IOException e) {
             log.error("Failed to read user input: {}", e.getMessage());
-            System.out.println("Error reading user input. Using original commit message.");
-            return originalMessage;
+            System.out.println("Error reading user input. Cancelling edit.");
+            return null;
         }
     }
 
@@ -423,35 +468,78 @@ public class CommitService {
                     )
             );
 
-            String message = chatModel.call(prompt)
-                                      .getResult()
-                                      .getOutput()
-                                      .getText();
+            ChatResponse response = chatModel.call(prompt);
+            if (response == null) {
+                throw new IllegalStateException("AI returned no response");
+            }
+            Generation result = response.getResult();
+            if (result == null || result.getOutput() == null) {
+                throw new IllegalStateException("AI returned no message output");
+            }
+            String message = result.getOutput().getText();
 
-            if (message == null || message.isBlank() || message.trim().isEmpty()) {
+            if (message == null || message.isBlank()) {
                 throw new IllegalStateException("AI returned an empty commit message");
             }
 
             return message.trim();
         } catch (Exception e) {
+            if (e instanceof InterruptedException interrupted) {
+                Thread.currentThread().interrupt();
+                throw new RuntimeException("AI request was interrupted.", interrupted);
+            }
             log.error("Failed to generate a commit message: {}", e.getMessage(), e);
 
-            if (e instanceof IllegalStateException) {
-                throw new IllegalStateException("AI returned an empty commit message");
+            if (e instanceof IllegalStateException illegalState) {
+                throw new IllegalStateException(illegalState.getMessage(), e);
             }
 
-            Throwable cause = e.getCause();
+            Throwable cause = e;
             while (cause != null) {
+                if (cause instanceof InterruptedException interrupted) {
+                    Thread.currentThread().interrupt();
+                    throw new RuntimeException("AI request was interrupted.", e);
+                }
                 if (cause instanceof ConnectException) {
                     throw new RuntimeException(
                             "Cannot connect to AI provider. Check your internet connection and verify the provider is accessible.",
                             e
                     );
                 }
+                if (cause instanceof UnknownHostException unknownHost) {
+                    throw new RuntimeException(
+                            "Cannot resolve AI provider host '" + unknownHost.getMessage()
+                                    + "'. Check the base URL and DNS.",
+                            e
+                    );
+                }
+                if (cause instanceof SocketTimeoutException) {
+                    throw new RuntimeException(
+                            "AI provider timed out. Check your connection or try a reachable provider.",
+                            e
+                    );
+                }
+                if (cause instanceof RestClientResponseException responseError) {
+                    int status = responseError.getRawStatusCode();
+                    if (status == 401) {
+                        throw new RuntimeException(
+                                "AI provider rejected the request (401 unauthorized). Check the API key.",
+                                e
+                        );
+                    }
+                    if (status == 429) {
+                        throw new RuntimeException(
+                                "AI provider rate limit exceeded (429). Wait and retry.",
+                                e
+                        );
+                    }
+                }
                 cause = cause.getCause();
             }
 
-            throw new RuntimeException("Failed to generate a commit message: " + e.getMessage(), e);
+            String detail = e.getMessage();
+            throw new RuntimeException(
+                    "Failed to generate a commit message: " + (detail == null || detail.isBlank() ? e : detail), e);
         }
     }
 

@@ -11,6 +11,7 @@ import org.springframework.ai.chat.model.ChatModel;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Locale;
 import java.util.Properties;
 
 /**
@@ -56,21 +57,37 @@ public class AiCommitCli {
     private static final String VERSION = loadVersion();
 
     public static void main(String[] args) {
+        System.exit(run(args));
+    }
+
+    /**
+     * Runs the CLI and returns the process exit code without exiting the JVM.
+     * <p>
+     * Separating execution from {@code System.exit} keeps the command flow testable.
+     * </p>
+     *
+     * @param args the command-line arguments, may be {@code null}
+     * @return 0 on success, 1 on failure
+     */
+    static int run(String[] args) {
+        if (args == null) {
+            args = new String[0];
+        }
         if (args.length > 0) {
             String arg = args[0];
             if (arg.equals("--version") || arg.equals("-v")) {
                 System.out.println("ai-commit version " + VERSION);
-                System.exit(0);
+                return 0;
             }
 
             if (arg.equals("--help") || arg.equals("-h")) {
                 printHelp();
-                System.exit(0);
+                return 0;
             }
 
             if(arg.equals("config")){
                 handleConfigCommand(args);
-                System.exit(0);
+                return 0;
             }
         }
 
@@ -82,14 +99,66 @@ public class AiCommitCli {
             CommitService commitService = new CommitService(gitService, chatModel);
 
             commitService.generateAndCommit();
-            System.exit(0);
+            return 0;
         } catch (IllegalStateException e) {
-            System.err.println("\nAn error occurred: " + e.getMessage());
-            System.exit(1);
+            System.err.println("\nAn error occurred: " + describeError(e));
+            return 1;
         } catch (Exception e) {
             log.error("Unexpected error occurred: {}", e.getMessage(), e);
-            System.err.println("\nAn error occurred: " + e.getMessage());
-            System.exit(1);
+            System.err.println("\nAn error occurred: " + describeError(e));
+            return 1;
+        }
+    }
+
+    /**
+     * Resolves a raw log level name to an allowlisted slf4j-simple level.
+     *
+     * @param rawLevel the raw level value, may be {@code null}
+     * @return the upper-cased level when allowlisted, otherwise {@code WARN}
+     */
+    static String resolveLogLevel(String rawLevel) {
+        String logLevel = rawLevel == null ? "WARN" : rawLevel.trim().toUpperCase(Locale.ROOT);
+        switch (logLevel) {
+            case "ERROR", "WARN", "INFO", "DEBUG":
+                return logLevel;
+            default:
+                return "WARN";
+        }
+    }
+
+    /**
+     * Describes an error for user-facing output without ever printing a blank message.
+     *
+     * @param e the error to describe, must not be {@code null}
+     * @return the error message, or the error type name when the message is blank
+     */
+    static String describeError(Exception e) {
+        String message = e.getMessage();
+        return (message == null || message.isBlank()) ? e.toString() : message;
+    }
+
+    /**
+     * Parses a strict on/off switch value for configuration commands.
+     * <p>
+     * Accepted values are {@code on}, {@code true}, {@code 1}, and {@code yes} for
+     * enabled, and {@code off}, {@code false}, {@code 0}, and {@code no} for disabled.
+     * </p>
+     *
+     * @param value the raw switch value, must not be {@code null}
+     * @param flag the flag name used in error messages, must not be {@code null}
+     * @return {@code true} when enabled, {@code false} when disabled
+     * @throws IllegalArgumentException when the value is not a recognized switch
+     */
+    static boolean parseToggle(String value, String flag) {
+        String normalized = value.trim().toLowerCase(Locale.ROOT);
+        switch (normalized) {
+            case "on", "true", "1", "yes":
+                return true;
+            case "off", "false", "0", "no":
+                return false;
+            default:
+                throw new IllegalArgumentException(
+                        "Invalid value '" + value.trim() + "' for " + flag + "; expected on|off.");
         }
     }
 
@@ -139,7 +208,14 @@ public class AiCommitCli {
                     System.out.println("Current: " + (UserPreferences.isAutoCommitEnabled() ? "enabled" : "disabled"));
                     System.out.println("Usage: ai-commit config --auto-commit [on|off]");
                 } else {
-                    boolean enable = args[2].equalsIgnoreCase("on") || args[2].equalsIgnoreCase("true");
+                    boolean enable;
+                    try {
+                        enable = parseToggle(args[2], "--auto-commit");
+                    } catch (IllegalArgumentException e) {
+                        System.out.println(e.getMessage());
+                        System.out.println("Usage: ai-commit config --auto-commit [on|off]");
+                        break;
+                    }
                     UserPreferences.setAutoCommit(enable);
                     System.out.println("Auto-commit " +  (enable ? "enabled" : "disabled"));
                     if (enable) {
@@ -153,7 +229,14 @@ public class AiCommitCli {
                     System.out.println("Current: " + (UserPreferences.isAutoPushEnabled() ? "enabled" : "disabled"));
                     System.out.println("Usage: ai-commit config --auto-push [on|off]");
                 } else {
-                    boolean enable = args[2].equalsIgnoreCase("on") || args[2].equalsIgnoreCase("true");
+                    boolean enable;
+                    try {
+                        enable = parseToggle(args[2], "--auto-push");
+                    } catch (IllegalArgumentException e) {
+                        System.out.println(e.getMessage());
+                        System.out.println("Usage: ai-commit config --auto-push [on|off]");
+                        break;
+                    }
                     UserPreferences.setAutoPush(enable);
                     System.out.println("Auto-push " + (enable ? "enabled" : "disabled"));
                     if (enable) {
@@ -276,8 +359,8 @@ public class AiCommitCli {
      * </ul>
      */
     private static void configureLogging() {
-        String logLevel = System.getenv().getOrDefault("AI_LOG_LEVEL", "WARN");
-        System.setProperty("org.slf4j.simpleLogger.defaultLogLevel", logLevel);
+        String rawLevel = System.getenv().getOrDefault("AI_LOG_LEVEL", "WARN");
+        System.setProperty("org.slf4j.simpleLogger.defaultLogLevel", resolveLogLevel(rawLevel));
         System.setProperty("org.slf4j.simpleLogger.showDateTime", "false");
         System.setProperty("org.slf4j.simpleLogger.showThreadName", "false");
         System.setProperty("org.slf4j.simpleLogger.showLogName", "false");
@@ -337,10 +420,11 @@ public class AiCommitCli {
                                           OLLAMA_MODEL             Model name (required, e.g., llama3, qwen2.5)
                                           OLLAMA_BASE_URL          Server URL (default: http://localhost:11434)
                                    
-                                       Optional Settings:
-                                          AI_LOG_LEVEL             Log level: ERROR, WARN, INFO, DEBUG (default: WARN)
-                                          AI_TEMPERATURE           Model temperature 0.0-2.0 (default: 0.1)
-                                          AI_COMMAND_TIMEOUT       Git command timeout seconds (default: 30)
+                                        Optional Settings:
+                                           AI_LOG_LEVEL             Log level: ERROR, WARN, INFO, DEBUG (default: WARN)
+                                           AI_TEMPERATURE           Model temperature 0.0-2.0 (default: 0.1)
+                                           AI_COMMAND_TIMEOUT       Git command timeout seconds (default: 30)
+                                           AI_ALLOW_INSECURE_HTTP   Allow plain http AI endpoints: true|false (default: false)
                                    
                                        CONFIGURATION:
                                            ai-commit config --show              # View settings

@@ -38,7 +38,7 @@ public class CommitServiceTest {
     @Test
     void generateAndCommit_withNoStagedChanges_shouldThrowException() {
         commitService = new CommitService(gitService, chatModel);
-        when(gitService.hasStagedChanges()).thenReturn(false);
+        when(gitService.getStagedDiff()).thenReturn("");
 
         IllegalStateException exception = assertThrows(
                 IllegalStateException.class,
@@ -46,8 +46,7 @@ public class CommitServiceTest {
         );
 
         assertTrue(exception.getMessage().contains("No staged changes found"));
-        verify(gitService).hasStagedChanges();
-        verify(gitService, never()).getStagedDiff();
+        verify(gitService).getStagedDiff();
         verify(chatModel, never()).call(any(Prompt.class));
         verify(gitService, never()).commit(anyString());
     }
@@ -61,7 +60,6 @@ public class CommitServiceTest {
         BufferedReader mockReader = new BufferedReader(new StringReader("y\n"));
         commitService = new CommitService(gitService, chatModel, mockReader);
 
-        when(gitService.hasStagedChanges()).thenReturn(true);
         when(gitService.getStagedDiff()).thenReturn(diff);
         when(gitService.commit(aiMessage)).thenReturn(commitOutput);
 
@@ -70,7 +68,6 @@ public class CommitServiceTest {
 
         commitService.generateAndCommit();
 
-        verify(gitService).hasStagedChanges();
         verify(gitService).getStagedDiff();
         verify(chatModel).call(any(Prompt.class));
         verify(gitService).commit(aiMessage);
@@ -81,7 +78,6 @@ public class CommitServiceTest {
         String diff = "diff --git a/test.txt\n+change";
 
         commitService = new CommitService(gitService, chatModel);
-        when(gitService.hasStagedChanges()).thenReturn(true);
         when(gitService.getStagedDiff()).thenReturn(diff);
 
         ChatResponse mockResponse = createMockChatResponse("");
@@ -93,7 +89,6 @@ public class CommitServiceTest {
         );
 
         assertTrue(exception.getMessage().contains("AI returned an empty commit message"));
-        verify(gitService).hasStagedChanges();
         verify(gitService).getStagedDiff();
         verify(chatModel).call(any(Prompt.class));
         verify(gitService, never()).commit(anyString());
@@ -104,7 +99,6 @@ public class CommitServiceTest {
         String diff = "diff --git a/test.txt\n+change";
 
         commitService = new CommitService(gitService, chatModel);
-        when(gitService.hasStagedChanges()).thenReturn(true);
         when(gitService.getStagedDiff()).thenReturn(diff);
 
         ChatResponse mockResponse = createMockChatResponse(null);
@@ -124,7 +118,6 @@ public class CommitServiceTest {
         String diff = "diff --git a/test.txt\n+change";
 
         commitService = new CommitService(gitService, chatModel);
-        when(gitService.hasStagedChanges()).thenReturn(true);
         when(gitService.getStagedDiff()).thenReturn(diff);
 
         ChatResponse mockResponse = createMockChatResponse("   \n\t  ");
@@ -144,7 +137,6 @@ public class CommitServiceTest {
         String diff = "diff --git a/test.txt\n+change";
 
         commitService = new CommitService(gitService, chatModel);
-        when(gitService.hasStagedChanges()).thenReturn(true);
         when(gitService.getStagedDiff()).thenReturn(diff);
         when(chatModel.call(any(Prompt.class))).thenThrow(new RuntimeException("API error"));
 
@@ -167,7 +159,6 @@ public class CommitServiceTest {
         BufferedReader mockReader = new BufferedReader(new StringReader("y\n"));
         commitService = new CommitService(gitService, chatModel, mockReader);
 
-        when(gitService.hasStagedChanges()).thenReturn(true);
         when(gitService.getStagedDiff()).thenReturn(diff);
         when(gitService.commit(trimmedMessage)).thenReturn(commitOutput);
 
@@ -189,7 +180,6 @@ public class CommitServiceTest {
         BufferedReader mockReader = new BufferedReader(new StringReader("r\ny\n"));
         commitService = new CommitService(gitService, chatModel, mockReader);
 
-        when(gitService.hasStagedChanges()).thenReturn(true);
         when(gitService.getStagedDiff()).thenReturn(diff);
         when(gitService.commit(secondMessage)).thenReturn(commitOutput);
 
@@ -201,7 +191,6 @@ public class CommitServiceTest {
 
         commitService.generateAndCommit();
 
-        verify(gitService).hasStagedChanges();
         verify(gitService).getStagedDiff();
         verify(chatModel, times(2)).call(any(Prompt.class));
         verify(gitService).commit(secondMessage);
@@ -217,7 +206,6 @@ public class CommitServiceTest {
         BufferedReader mockReader = new BufferedReader(new StringReader("e\n" + editedMessage + "\n"));
         commitService = new CommitService(gitService, chatModel, mockReader);
 
-        when(gitService.hasStagedChanges()).thenReturn(true);
         when(gitService.getStagedDiff()).thenReturn(diff);
         when(gitService.commit(editedMessage)).thenReturn(commitOutput);
 
@@ -226,7 +214,6 @@ public class CommitServiceTest {
 
         commitService.generateAndCommit();
 
-        verify(gitService).hasStagedChanges();
         verify(gitService).getStagedDiff();
         verify(chatModel).call(any(Prompt.class));
         verify(gitService).commit(editedMessage);
@@ -241,7 +228,6 @@ public class CommitServiceTest {
         BufferedReader mockReader = new BufferedReader(new StringReader("e\n\n"));
         commitService = new CommitService(gitService, chatModel, mockReader);
 
-        when(gitService.hasStagedChanges()).thenReturn(true);
         when(gitService.getStagedDiff()).thenReturn(diff);
         when(gitService.commit(aiMessage)).thenReturn(commitOutput);
 
@@ -250,7 +236,6 @@ public class CommitServiceTest {
 
         commitService.generateAndCommit();
 
-        verify(gitService).hasStagedChanges();
         verify(gitService).getStagedDiff();
         verify(chatModel).call(any(Prompt.class));
         verify(gitService).commit(aiMessage);
@@ -264,7 +249,6 @@ public class CommitServiceTest {
         BufferedReader mockReader = new BufferedReader(new StringReader("c\n"));
         commitService = new CommitService(gitService, chatModel, mockReader);
 
-        when(gitService.hasStagedChanges()).thenReturn(true);
         when(gitService.getStagedDiff()).thenReturn(diff);
 
         ChatResponse mockResponse = createMockChatResponse(aiMessage);
@@ -272,34 +256,29 @@ public class CommitServiceTest {
 
         commitService.generateAndCommit();
 
-        verify(gitService).hasStagedChanges();
         verify(gitService).getStagedDiff();
         verify(chatModel).call(any(Prompt.class));
         verify(gitService, never()).commit(anyString());
     }
 
     @Test
-    void generateAndCommit_withEmptyUserInput_shouldDefaultToYes() {
+    void generateAndCommit_withEmptyUserInput_shouldCancel() {
         String diff = "diff --git a/test.txt\n+change";
         String aiMessage = "feat: add feature";
-        String commitOutput = "[main abc123] feat: add feature";
 
         BufferedReader mockReader = new BufferedReader(new StringReader("\n"));
         commitService = new CommitService(gitService, chatModel, mockReader);
 
-        when(gitService.hasStagedChanges()).thenReturn(true);
         when(gitService.getStagedDiff()).thenReturn(diff);
-        when(gitService.commit(aiMessage)).thenReturn(commitOutput);
 
         ChatResponse mockResponse = createMockChatResponse(aiMessage);
         when(chatModel.call(any(Prompt.class))).thenReturn(mockResponse);
 
         commitService.generateAndCommit();
 
-        verify(gitService).hasStagedChanges();
         verify(gitService).getStagedDiff();
         verify(chatModel).call(any(Prompt.class));
-        verify(gitService).commit(aiMessage);
+        verify(gitService, never()).commit(anyString());
     }
 
     @Test
@@ -311,7 +290,6 @@ public class CommitServiceTest {
         BufferedReader mockReader = new BufferedReader(new StringReader("x\ny\n"));
         commitService = new CommitService(gitService, chatModel, mockReader);
 
-        when(gitService.hasStagedChanges()).thenReturn(true);
         when(gitService.getStagedDiff()).thenReturn(diff);
         when(gitService.commit(aiMessage)).thenReturn(commitOutput);
 
@@ -320,7 +298,6 @@ public class CommitServiceTest {
 
         commitService.generateAndCommit();
 
-        verify(gitService).hasStagedChanges();
         verify(gitService).getStagedDiff();
         verify(chatModel).call(any(Prompt.class));
         verify(gitService).commit(aiMessage);
@@ -337,7 +314,6 @@ public class CommitServiceTest {
         BufferedReader mockReader = new BufferedReader(new StringReader("r\nr\ny\n"));
         commitService = new CommitService(gitService, chatModel, mockReader);
 
-        when(gitService.hasStagedChanges()).thenReturn(true);
         when(gitService.getStagedDiff()).thenReturn(diff);
         when(gitService.commit(thirdMessage)).thenReturn(commitOutput);
 
@@ -351,7 +327,6 @@ public class CommitServiceTest {
 
         commitService.generateAndCommit();
 
-        verify(gitService).hasStagedChanges();
         verify(gitService).getStagedDiff();
         verify(chatModel, times(3)).call(any(Prompt.class));
         verify(gitService).commit(thirdMessage);

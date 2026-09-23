@@ -34,13 +34,10 @@ jobs:
           restore-keys: ${{ runner.os }}-maven-
 
       - name: Run Tests
-        run: mvn test
-
-      - name: Build JAR
-        run: mvn clean package -DskipTests
+        run: mvn verify -DskipNativeBuild=true
 
       - name: Test Native Compilation
-        run: mvn clean package -Pnative -DskipTests
+        run: mvn clean package -DskipTests
 
       - name: Test Binary (Unix)
         if: runner.os != 'Windows'
