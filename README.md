@@ -119,7 +119,7 @@ ai-commit --version
 **Development build (JAR, faster):**
 ```bash
 mvn clean package
-java -jar target/ai-commit-cli-1.2.0.jar --version
+java -jar target/ai-commit-cli-1.3.0.jar --version
 ```
 
 ## Quick Start
@@ -509,7 +509,7 @@ ai-commit config --auto-commit on
 ```bash
 # Build JAR (fast iteration)
 mvn clean package
-java -jar target/ai-commit-cli-1.2.0.jar
+java -jar target/ai-commit-cli-1.3.0.jar
 
 # Build native binary (GraalVM required; JaCoCo gate enforced via verify)
 mvn clean verify
