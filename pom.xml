@@ -185,6 +185,7 @@
                         <buildArg>-H:+ReportExceptionStackTraces</buildArg>
                         <buildArg>--initialize-at-run-time=io.netty,reactor.netty</buildArg>
                         <buildArg>-march=compatibility</buildArg>
+                        <buildArg>-R:MaxHeapSize=256m</buildArg>
                     </buildArgs>
                 </configuration>
             </plugin>
@@ -254,6 +255,9 @@
                         <goals>
                             <goal>makeAggregateBom</goal>
                         </goals>
+                        <configuration>
+                            <outputFormat>json</outputFormat>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>
