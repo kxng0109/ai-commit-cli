@@ -168,6 +168,20 @@ public class GitService {
     }
 
     /**
+     * Stages tracked modifications and deletions, like {@code git commit -a}.
+     * <p>
+     * Only already-tracked files are staged; untracked files are left alone
+     * and must be added explicitly with {@code git add}.
+     * </p>
+     *
+     * @return the output of the git add command
+     */
+    public String stageTracked() {
+        log.debug("Staging tracked changes...");
+        return runCommand("git", "add", "--update");
+    }
+
+    /**
      * Commits the currently staged changes in the Git repository with the provided commit message.
      * This method invokes the Git command to commit changes and adds the specified message.
      *
@@ -183,6 +197,21 @@ public class GitService {
         }
         log.debug("Committing changes...");
         return runCommand("git", "commit", "--message", message);
+    }
+
+    /**
+     * Amends the previous commit with the currently staged changes and a new message.
+     *
+     * @param message the replacement commit message, must not be {@code null} or blank
+     * @return the output of the git amend command
+     * @throws IllegalArgumentException when the message is {@code null} or blank
+     */
+    public String amend(String message) {
+        if (message == null || message.isBlank()) {
+            throw new IllegalArgumentException("commit message must not be blank.");
+        }
+        log.debug("Amending previous commit...");
+        return runCommand("git", "commit", "--amend", "--message", message);
     }
     
     /**

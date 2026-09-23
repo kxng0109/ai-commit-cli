@@ -179,6 +179,62 @@ public class CommitService {
      * @throws IllegalStateException if no staged changes are found in the repository.
      */
     public void generateAndCommit() {
+        generateAndCommit(UserPreferences.isAutoCommitEnabled());
+    }
+
+    /**
+     * Generates a commit message and commits staged changes.
+     *
+     * @param auto when {@code true} the message is committed without prompting,
+     *             otherwise the interactive flow is used
+     */
+    public void generateAndCommit(boolean auto) {
+        String diff = resolveDiff();
+        boolean autoPush = UserPreferences.isAutoPushEnabled();
+
+        if (auto) {
+            log.info("Auto-commit is enabled. Generating commit message.");
+            handleAutoCommit(diff, autoPush, false);
+        } else {
+            handleInteractiveCommit(diff, autoPush, false);
+        }
+    }
+
+    /**
+     * Generates a commit message and amends the previous commit with staged changes.
+     *
+     * @param auto when {@code true} the message is amended without prompting,
+     *             otherwise the interactive flow is used
+     */
+    public void generateAndAmend(boolean auto) {
+        String diff = resolveDiff();
+        boolean autoPush = UserPreferences.isAutoPushEnabled();
+
+        if (auto) {
+            log.info("Auto-amend is enabled. Generating commit message.");
+            handleAutoCommit(diff, autoPush, true);
+        } else {
+            handleInteractiveCommit(diff, autoPush, true);
+        }
+    }
+
+    /**
+     * Generates a commit message for staged changes without committing.
+     *
+     * @return the generated commit message
+     * @throws IllegalStateException when there are no staged changes or the diff is blocked
+     */
+    public String previewMessage() {
+        return generateMessage(resolveDiff());
+    }
+
+    /**
+     * Fetches the staged diff and guards it against AI submission policy.
+     *
+     * @return the guarded staged diff, never {@code null} or blank
+     * @throws IllegalStateException when there are no staged changes or the diff is blocked
+     */
+    private String resolveDiff() {
         log.info("Checking for staged changes...");
         String diff;
         try {
@@ -191,15 +247,7 @@ public class CommitService {
         }
 
         guardDiff(diff);
-        boolean autoCommit = UserPreferences.isAutoCommitEnabled();
-        boolean autoPush = UserPreferences.isAutoPushEnabled();
-
-        if (autoCommit) {
-            log.info("Auto-commit is enabled. Generating commit message.");
-            handleAutoCommit(diff, autoPush);
-        } else {
-            handleInteractiveCommit(diff, autoPush);
-        }
+        return diff;
     }
 
     /**
@@ -239,16 +287,17 @@ public class CommitService {
      * @param diff     a string representation of the changes (diff) used to generate the commit message.
      * @param autoPush a boolean flag indicating whether changes should be pushed automatically
      *                 to the remote repository after committing. If {@code true}, auto-push is enabled.
+     * @param amend when {@code true} the previous commit is amended instead of creating a new commit.
      */
-    private void handleAutoCommit(String diff, boolean autoPush) {
+    private void handleAutoCommit(String diff, boolean autoPush, boolean amend) {
         try {
             log.info("Generating commit message with AI...");
             String commitMessage = generateMessage(diff);
             displayMessage(commitMessage);
 
-            System.out.println("\nAuto-committing...");
+            System.out.println(amend ? "\nAuto-amending..." : "\nAuto-committing...");
 
-            String output = gitService.commit(commitMessage);
+            String output = amend ? gitService.amend(commitMessage) : gitService.commit(commitMessage);
             displayGitOutput(output);
             log.info("Committed changes successfully.");
 
@@ -279,8 +328,9 @@ public class CommitService {
      * @param autoPush a boolean value indicating whether to automatically push changes
      *                 to the remote repository after a successful commit. If {@code true},
      *                 automatic push is attempted; otherwise, it is skipped.
+     * @param amend when {@code true} the previous commit is amended instead of creating a new commit.
      */
-    private void handleInteractiveCommit(String diff, boolean autoPush) {
+    private void handleInteractiveCommit(String diff, boolean autoPush, boolean amend) {
         String commitMessage = null;
         boolean isCommitted = false;
 
@@ -296,8 +346,8 @@ public class CommitService {
 
             switch (choice) {
                 case "y", "yes":
-                    log.info("Committing changes...");
-                    String output = gitService.commit(commitMessage);
+                    log.info(amend ? "Amending changes..." : "Committing changes...");
+                    String output = amend ? gitService.amend(commitMessage) : gitService.commit(commitMessage);
 
                     displayGitOutput(output);
                     log.info("Committed changes successfully.");

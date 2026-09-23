@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- `--yes`/`-y` commits without prompting (one-shot non-interactive mode); `--dry-run` prints the message without committing.
+- `--amend` regenerates the message and amends the previous commit; `-a`/`--all` stages tracked modifications first.
+- `--provider` and `--model` overrides per run; unknown options/commands are now rejected instead of ignored.
+- `completion` command printing bash/zsh/fish/powershell scripts (bundled resources, native-image ready).
+
 ### Changed
 - Native binary caps heap at 256MB (`-R:MaxHeapSize=256m`, overridable per run with `-Xmx`); SBOM emits JSON only.
 

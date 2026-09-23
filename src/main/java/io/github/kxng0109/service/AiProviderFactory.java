@@ -25,6 +25,7 @@ import org.springframework.web.client.DefaultResponseErrorHandler;
 import org.springframework.web.client.RestClient;
 
 import java.time.Duration;
+import java.util.Locale;
 
 /**
  * Factory class for creating instances of {@code ChatModel} based on configuration.
@@ -98,62 +99,95 @@ public class AiProviderFactory {
      * @throws IllegalStateException if no AI provider is configured.
      */
     public static ChatModel createChatModel(Config config) {
+        return createChatModel(config, selectedProvider(config));
+    }
+
+    /**
+     * Creates a chat model for the named provider.
+     *
+     * @param config the application configuration containing provider settings and model parameters
+     * @param provider the provider name (case-insensitive): openai, anthropic, google, deepseek, ollama
+     * @return a {@code ChatModel} instance for the requested provider
+     * @throws IllegalArgumentException when the provider name is unknown
+     * @throws IllegalStateException when the requested provider is not configured
+     */
+    public static ChatModel createChatModel(Config config, String provider) {
+        if (provider == null || provider.isBlank()) {
+            throw new IllegalArgumentException(
+                    "Unknown provider ''. Supported: openai, anthropic, google, deepseek, ollama.");
+        }
+        String name = provider.trim().toLowerCase(Locale.ROOT);
+        switch (name) {
+            case "openai":
+                requireConfigured(config.openai().isConfigured(), "OpenAI", "OPENAI_API_KEY");
+                log.info("Using OpenAI-compatible provider");
+                log.debug("Base URL: {}. Model: {}", config.openai().baseUrl(), config.openai().model());
+                return createOpenAiModel(config);
+            case "anthropic":
+                requireConfigured(config.anthropic().isConfigured(), "Anthropic", "ANTHROPIC_API_KEY");
+                log.info("Using Anthropic provider");
+                log.debug("Model: {}", config.anthropic().model());
+                return createAnthropicModel(config);
+            case "google":
+                requireConfigured(config.google().isConfigured(), "Google", "GOOGLE_API_KEY");
+                log.info("Using Google Gemini provider");
+                log.debug("Model: {}", config.google().model());
+                return createGoogleModel(config);
+            case "deepseek":
+                requireConfigured(config.deepseek().isConfigured(), "DeepSeek", "DEEPSEEK_API_KEY");
+                log.info("Using Deepseek provider");
+                return createDeepseekModel(config);
+            case "ollama":
+                requireConfigured(config.ollama().isConfigured(), "Ollama", "OLLAMA_MODEL");
+                log.info("Ollama is configured, Using Ollama provider.");
+                log.debug("Base URL: {}. Model: {}", config.ollama().baseUrl(), config.ollama().model());
+                return createOllamaModel(config);
+            default:
+                throw new IllegalArgumentException(
+                        "Unknown provider '" + provider.trim()
+                                + "'. Supported: openai, anthropic, google, deepseek, ollama.");
+        }
+    }
+
+    /**
+     * Returns the first configured provider in priority order.
+     *
+     * @param config the application configuration, must not be {@code null}
+     * @return the provider name: openai, anthropic, google, deepseek, or ollama
+     * @throws IllegalStateException if no AI provider is configured
+     */
+    public static String selectedProvider(Config config) {
         if (config.openai().isConfigured()) {
-            log.info("Using OpenAI-compatible provider");
-            log.debug("Base URL: {}. Model: {}", config.openai().baseUrl(), config.openai().model());
-            return createOpenAiModel(config);
+            return "openai";
         }
-
         if (config.anthropic().isConfigured()) {
-            log.info("Using Anthropic provider");
-            log.debug("Model: {}", config.anthropic().model());
-            return createAnthropicModel(config);
+            return "anthropic";
         }
-
         if (config.google().isConfigured()) {
-            log.info("Using Google Gemini provider");
-            log.debug("Model: {}", config.google().model());
-            return createGoogleModel(config);
+            return "google";
         }
-
         if (config.deepseek().isConfigured()) {
-            log.info("Using Deepseek provider");
-            return createDeepseekModel(config);
+            return "deepseek";
         }
-
         if (config.ollama().isConfigured()) {
-            log.info("Ollama is configured, Using Ollama provider.");
-            log.debug("Base URL: {}. Model: {}", config.ollama().baseUrl(), config.ollama().model());
-            return createOllamaModel(config);
+            return "ollama";
         }
+        throw new IllegalStateException("No AI provider configured. Set at least one API key (e.g., OPENAI_API_KEY) or OLLAMA_MODEL.");
+    }
 
-        throw new IllegalStateException(
-                """
-                        No AI provider configured. Please set one of the following:
-                        
-                                    1. OpenAI / OpenAI-compatible:
-                                       export OPENAI_API_KEY="your-api-key"
-                                       export OPENAI_MODEL="gpt-4o"  # optional
-                                       export OPENAI_BASE_URL="https://api.openai.com"  # optional
-                        
-                                    2. Anthropic Claude:
-                                       export ANTHROPIC_API_KEY="your-api-key"
-                                       export ANTHROPIC_MODEL="claude-sonnet-4-0"  # optional
-                        
-                                    3. Google Gemini:
-                                       export GOOGLE_API_KEY="your-api-key"
-                                       export GOOGLE_MODEL="gemini-2.0-flash-exp"  # optional
-                        
-                                    4. Deepseek:
-                                       export DEEPSEEK_API_KEY="your-api-key"
-                        
-                                    5. Ollama (local):
-                                       export OLLAMA_MODEL="llama3"
-                                       export OLLAMA_BASE_URL="http://localhost:11434"  # optional
-                        
-                                    Run 'ai-commit --help' for more information.
-                        """
-        );
+    /**
+     * Requires a provider to be configured, raising an actionable error otherwise.
+     *
+     * @param configured whether the provider is configured
+     * @param displayName the human-readable provider name for messages
+     * @param envVar the environment variable that configures the provider
+     * @throws IllegalStateException when the provider is not configured
+     */
+    private static void requireConfigured(boolean configured, String displayName, String envVar) {
+        if (!configured) {
+            throw new IllegalStateException(
+                    displayName + " provider selected but not configured. Set " + envVar + ".");
+        }
     }
 
     /**

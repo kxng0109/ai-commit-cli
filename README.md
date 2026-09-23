@@ -265,6 +265,37 @@ ai-commit  # If auto-commit is enabled, it commits instantly AND pushes instantl
 # Note: auto-push does not require auto-commit to work
 ```
 
+### Command-Line Flags
+
+Flags work on any run without changing saved settings:
+
+```bash
+git add .
+ai-commit --yes                    # Commit immediately, no prompt (great for scripts)
+ai-commit --dry-run                # Print the message, commit nothing
+ai-commit --amend                  # Regenerate the message and amend the last commit
+ai-commit -a                       # Stage tracked modifications first (like git commit -a)
+ai-commit --provider anthropic     # Use one provider for this run only
+ai-commit --model gpt-4o           # Override the model for this run only
+ai-commit --provider ollama --model llama3
+```
+
+Unknown options and commands are rejected instead of ignored. `--model` is
+rejected for DeepSeek, which uses a fixed model.
+
+### Shell Completions
+
+```bash
+# Bash
+ai-commit completion bash >> ~/.bash_completion
+# Zsh
+ai-commit completion zsh > ~/.zsh/completions/_ai-commit
+# Fish
+ai-commit completion fish > ~/.config/fish/completions/ai-commit.fish
+# PowerShell
+ai-commit completion powershell >> $PROFILE
+```
+
 ## Examples
 
 **OpenAI:**

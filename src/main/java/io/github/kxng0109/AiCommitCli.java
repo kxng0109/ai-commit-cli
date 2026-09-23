@@ -11,6 +11,8 @@ import org.springframework.ai.chat.model.ChatModel;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 import java.util.Properties;
 
@@ -70,35 +72,50 @@ public class AiCommitCli {
      * @return 0 on success, 1 on failure
      */
     static int run(String[] args) {
-        if (args == null) {
-            args = new String[0];
+        CliOptions options;
+        try {
+            options = parseArgs(args);
+        } catch (IllegalArgumentException e) {
+            System.err.println(e.getMessage());
+            return 1;
         }
-        if (args.length > 0) {
-            String arg = args[0];
-            if (arg.equals("--version") || arg.equals("-v")) {
-                System.out.println("ai-commit version " + VERSION);
-                return 0;
-            }
+        if (options.version()) {
+            System.out.println("ai-commit version " + VERSION);
+            return 0;
+        }
 
-            if (arg.equals("--help") || arg.equals("-h")) {
-                printHelp();
-                return 0;
-            }
+        if (options.help()) {
+            printHelp();
+            return 0;
+        }
 
-            if(arg.equals("config")){
-                handleConfigCommand(args);
-                return 0;
+        if ("config".equals(options.subcommand())) {
+            List<String> subArgs = new ArrayList<>();
+            subArgs.add("config");
+            subArgs.addAll(options.subArgs());
+            handleConfigCommand(subArgs.toArray(new String[0]));
+            return 0;
+        }
+
+        if ("completion".equals(options.subcommand())) {
+            try {
+                printCompletion(options.subArgs());
+            } catch (IllegalArgumentException e) {
+                System.err.println(e.getMessage());
+                return 1;
+            } catch (IOException e) {
+                System.err.println("Failed to load completion script: " + describeError(e));
+                return 1;
             }
+            return 0;
         }
 
         try {
             Config config = Config.loadFromEnv();
 
             GitService gitService = new GitService(config.commandTimeoutSeconds());
-            ChatModel chatModel = AiProviderFactory.createChatModel(config);
-            CommitService commitService = new CommitService(gitService, chatModel);
-
-            commitService.generateAndCommit();
+            ChatModel chatModel = resolveChatModel(config, options);
+            executeCommit(options, gitService, chatModel);
             return 0;
         } catch (IllegalStateException e) {
             System.err.println("\nAn error occurred: " + describeError(e));
@@ -107,6 +124,233 @@ public class AiCommitCli {
             log.error("Unexpected error occurred: {}", e.getMessage(), e);
             System.err.println("\nAn error occurred: " + describeError(e));
             return 1;
+        }
+    }
+
+    /**
+     * Executes the commit flow for parsed options.
+     * <p>
+     * Separated from {@link #run} so dispatch branches are unit-testable with
+     * mocked services instead of live providers.
+     * </p>
+     *
+     * @param options the parsed options, must not be {@code null}
+     * @param gitService the git service, must not be {@code null}
+     * @param chatModel the chat model, must not be {@code null}
+     */
+    static void executeCommit(CliOptions options, GitService gitService, ChatModel chatModel) {
+        CommitService commitService = new CommitService(gitService, chatModel);
+        if (options.stageAll()) {
+            gitService.stageTracked();
+        }
+        if (options.dryRun()) {
+            System.out.println(commitService.previewMessage());
+            return;
+        }
+        if (options.amend()) {
+            commitService.generateAndAmend(options.yes());
+            return;
+        }
+        if (options.yes()) {
+            commitService.generateAndCommit(true);
+            return;
+        }
+        commitService.generateAndCommit();
+    }
+
+    /**
+     * Parsed command-line options for one invocation.
+     *
+     * @param version true when {@code --version} was passed
+     * @param help true when {@code --help} was passed
+     * @param yes true when {@code --yes} was passed
+     * @param dryRun true when {@code --dry-run} was passed
+     * @param amend true when {@code --amend} was passed
+     * @param stageAll true when {@code -a} or {@code --all} was passed
+     * @param model the {@code --model} value, or {@code null} when absent
+     * @param provider the {@code --provider} value, or {@code null} when absent
+     * @param subcommand the positional subcommand ({@code config}, {@code completion}), or {@code null}
+     * @param subArgs positional arguments following the subcommand
+     */
+    record CliOptions(
+            boolean version,
+            boolean help,
+            boolean yes,
+            boolean dryRun,
+            boolean amend,
+            boolean stageAll,
+            String model,
+            String provider,
+            String subcommand,
+            List<String> subArgs) {
+    }
+
+    /**
+     * Parses command-line arguments into {@link CliOptions}.
+     * <p>
+     * Fail-closed: unknown options, unknown subcommands, and flags missing
+     * values are rejected with an actionable message instead of being ignored.
+     * </p>
+     *
+     * @param args the raw arguments, may be {@code null}
+     * @return the parsed options
+     * @throws IllegalArgumentException when the arguments are invalid
+     */
+    static CliOptions parseArgs(String[] args) {
+        boolean version = false;
+        boolean help = false;
+        boolean yes = false;
+        boolean dryRun = false;
+        boolean amend = false;
+        boolean stageAll = false;
+        String model = null;
+        String provider = null;
+        String subcommand = null;
+        List<String> subArgs = new ArrayList<>();
+
+        if (args == null) {
+            args = new String[0];
+        }
+        for (int i = 0; i < args.length; i++) {
+            String arg = args[i];
+            switch (arg) {
+                case "--version", "-v":
+                    version = true;
+                    break;
+                case "--help", "-h":
+                    help = true;
+                    break;
+                case "--yes", "-y":
+                    yes = true;
+                    break;
+                case "--dry-run":
+                    dryRun = true;
+                    break;
+                case "--amend":
+                    amend = true;
+                    break;
+                case "-a", "--all":
+                    stageAll = true;
+                    break;
+                case "--model", "--provider": {
+                    if (i + 1 >= args.length || args[i + 1].startsWith("-")) {
+                        throw new IllegalArgumentException(
+                                "Option '" + arg + "' requires a value. See ai-commit --help.");
+                    }
+                    String value = args[++i].trim();
+                    if (value.isEmpty()) {
+                        throw new IllegalArgumentException(
+                                "Option '" + arg + "' requires a value. See ai-commit --help.");
+                    }
+                    if (arg.equals("--model")) {
+                        model = value;
+                    } else {
+                        provider = value;
+                    }
+                    break;
+                }
+                default:
+                    if (subcommand != null) {
+                        subArgs.add(arg);
+                        break;
+                    }
+                    if (arg.startsWith("--model=")) {
+                        model = inlineValue(arg, "--model=");
+                    } else if (arg.startsWith("--provider=")) {
+                        provider = inlineValue(arg, "--provider=");
+                    } else if (arg.startsWith("-")) {
+                        throw new IllegalArgumentException(
+                                "Unknown option '" + arg + "'. See ai-commit --help.");
+                    } else {
+                        if (!arg.equals("config") && !arg.equals("completion")) {
+                            throw new IllegalArgumentException(
+                                    "Unknown command '" + arg + "'. See ai-commit --help.");
+                        }
+                        subcommand = arg;
+                    }
+                    break;
+            }
+        }
+        return new CliOptions(version, help, yes, dryRun, amend, stageAll, model, provider,
+                subcommand, List.copyOf(subArgs));
+    }
+
+    /**
+     * Extracts the value of an inline {@code --flag=value} argument.
+     *
+     * @param arg the raw argument, must start with {@code prefix}
+     * @param prefix the flag prefix including the equals sign
+     * @return the trimmed non-empty value
+     * @throws IllegalArgumentException when the value is missing or blank
+     */
+    private static String inlineValue(String arg, String prefix) {
+        String value = arg.substring(prefix.length()).trim();
+        if (value.isEmpty()) {
+            throw new IllegalArgumentException(
+                    "Option '" + prefix.substring(0, prefix.length() - 1) + "' requires a value. See ai-commit --help.");
+        }
+        return value;
+    }
+
+    /**
+     * Resolves the chat model, applying per-run provider and model overrides.
+     *
+     * @param config the loaded configuration, must not be {@code null}
+     * @param options the parsed options, must not be {@code null}
+     * @return the chat model for the selected provider
+     * @throws IllegalStateException when no provider is available or the override is invalid
+     */
+    static ChatModel resolveChatModel(Config config, CliOptions options) {
+        if (options.provider() == null && options.model() == null) {
+            return AiProviderFactory.createChatModel(config);
+        }
+        String provider = options.provider() != null
+                ? options.provider()
+                : AiProviderFactory.selectedProvider(config);
+        if (options.model() != null) {
+            config = config.withModel(provider, options.model());
+        }
+        return AiProviderFactory.createChatModel(config, provider);
+    }
+
+    /**
+     * Prints the completion script for the requested shell.
+     *
+     * @param subArgs the shell name as the first element
+     * @throws IllegalArgumentException when the shell is missing or unsupported
+     * @throws IOException when the bundled script cannot be read
+     */
+    private static void printCompletion(List<String> subArgs) throws IOException {
+        if (subArgs.isEmpty()) {
+            throw new IllegalArgumentException(
+                    "Usage: ai-commit completion [bash|zsh|fish|powershell]");
+        }
+        String shell = subArgs.get(0).trim().toLowerCase(Locale.ROOT);
+        String resource;
+        switch (shell) {
+            case "bash":
+                resource = "completions/ai-commit.bash";
+                break;
+            case "zsh":
+                resource = "completions/ai-commit.zsh";
+                break;
+            case "fish":
+                resource = "completions/ai-commit.fish";
+                break;
+            case "powershell":
+                resource = "completions/ai-commit.ps1";
+                break;
+            default:
+                throw new IllegalArgumentException(
+                        "Unsupported shell '" + subArgs.get(0).trim()
+                                + "'. Supported: bash, zsh, fish, powershell.");
+        }
+        try (InputStream input = AiCommitCli.class.getClassLoader().getResourceAsStream(resource)) {
+            if (input == null) {
+                throw new IOException("completion script not found: " + resource);
+            }
+            System.out.write(input.readAllBytes());
+            System.out.flush();
         }
     }
 
@@ -395,6 +639,16 @@ public class AiCommitCli {
                                    OPTIONS:
                                        -h, --help       Show this help message
                                        -v, --version    Show version information
+                                       -y, --yes        Commit without prompting (non-interactive)
+                                       --dry-run        Print the message without committing
+                                       --amend          Amend the previous commit with staged changes
+                                       -a, --all        Stage tracked modifications first (like git commit -a)
+                                       --model <name>   Use this model for the run (e.g., --model gpt-4o)
+                                       --provider <name> Use this provider: openai, anthropic, google, deepseek, ollama
+                                   
+                                   COMMANDS:
+                                       config           Manage settings (see CONFIGURATION)
+                                       completion <shell>  Print shell completions: bash, zsh, fish, powershell
                                    
                                    ENVIRONMENT VARIABLES:
                                    
