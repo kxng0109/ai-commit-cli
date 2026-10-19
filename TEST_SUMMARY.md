@@ -1,6 +1,6 @@
 # Test Suite Summary
 
-## Total Tests: 217
+## Total Tests: 223
 
 JaCoCo gate on `verify`: 90% line + branch minimum (currently 95.8% line, 92.4% branch).
 
@@ -132,6 +132,7 @@ mvn clean verify
 | CommitServiceEdgeTest     | 6     | null diff/output, 5xx, edit edges           |
 | CommitServiceFlowTest     | 5     | preview, forced auto, amend flows           |
 | CompletionTest            | 7     | bundled scripts, shell dispatch             |
+| ProviderWireTest          | 6     | live wire contract for all 5 providers      |
 
 ---
 
