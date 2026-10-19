@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Provider wire-contract tests: a local HTTP server speaks each provider's real protocol (OpenAI-compatible, Ollama, Anthropic, DeepSeek, Google) through the real Spring AI client stack, so request and response mapping is verified without an API key.
+
+### Changed
+- Removed the unused `io.rest-assured:json-path` chain (pulls in Groovy, about 7.6 MB) from the Anthropic provider dependency; classpath analysis shows zero references to it.
+
 ## [1.4.0] - 2026-09-23
 
 ### Added

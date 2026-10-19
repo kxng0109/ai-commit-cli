@@ -60,6 +60,18 @@
         <dependency>
             <groupId>org.springframework.ai</groupId>
             <artifactId>spring-ai-anthropic</artifactId>
+            <exclusions>
+                <!--
+                  Upstream declares rest-assured json-path at compile scope, which drags in
+                  groovy (7.4 MB) and groovy-json. Bytecode analysis of the Anthropic client
+                  shows zero references to io.rest_assured, com.jayway.jsonpath, or
+                  org.codehaus.groovy, so the chain is dead weight for this CLI.
+                -->
+                <exclusion>
+                    <groupId>io.rest-assured</groupId>
+                    <artifactId>json-path</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
